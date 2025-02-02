@@ -1,0 +1,89 @@
+name: ci
+
+concurrency: ci-version
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  get-new-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new-version: ${{ steps.dryRunGetNewVer.outputs.new_tag }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Dry run to get new version tag
+      id: dryRunGetNewVer
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_GITHUB_TAG_TOKEN }}
+        DRY_RUN: true
+        REPO_OWNER: imaging8896
+        DEFAULT_BUMP: patch
+    - name: Echo new tag
+      run: |
+        echo "The next tag version will be: ${{ steps.dryRunGetNewVer.outputs.new_tag }}"
+    - name: Echo current tag
+      run: |
+        echo "The current tag is: ${{ steps.dryRunGetNewVer.outputs.tag }}"
+    - name: Echo increment part of the new tag
+      run: |
+        echo "The version increment was: ${{ steps.dryRunGetNewVer.outputs.part }}"
+  build-and-push-with-ver:
+    needs: get-new-version
+    runs-on: ubuntu-latest
+    env:
+      local_docker_tag: local/get-financial-data:ci
+      aws_push_ecr_profile_name: push-ecr
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up QEMU for Docker Buildx
+      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    - name: build
+      env:
+        platform: linux/arm64
+        dockerfile: dockerfile/aws-lambda-get-financial-data.dockerfile
+      run: | 
+        docker buildx build -f ${dockerfile} --platform=${platform} --no-cache -t ${local_docker_tag} --output type=docker .
+        docker images
+    - name: Prepare AWS config and credential
+      run: |
+        mkdir -p ~/.aws
+        touch ~/.aws/config
+        echo "[default]" >> ~/.aws/config
+        echo "region = ${{ secrets.AWS_REGION }}" >> ~/.aws/config
+        echo "output = json" >> ~/.aws/config
+
+        echo "[profile ${aws_push_ecr_profile_name}]" >> ~/.aws/config
+        echo "role_arn = ${{ secrets.AWS_PUSH_ECR_ROLE_ARN }}" >> ~/.aws/config
+        echo "source_profile = default" >> ~/.aws/config
+        echo "region = ${{ secrets.AWS_REGION }}" >> ~/.aws/config
+
+        touch ~/.aws/credentials
+        echo "[default]" >> ~/.aws/credentials
+        echo "aws_access_key_id = ${{ secrets.AWS_PUSH_ECR_KEY }}" >> ~/.aws/credentials
+        echo "aws_secret_access_key = ${{ secrets.AWS_PUSH_ECR_SECRET }}" >> ~/.aws/credentials
+    - name: login ECR
+      run: | 
+        aws ecr get-login-password --profile ${aws_push_ecr_profile_name} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+    - name: tag and push
+      run: |
+        docker tag ${local_docker_tag} ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/data/get-financial-data:${{ needs.get-new-version.outputs.new-version }}
+        docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/data/get-financial-data:${{ needs.get-new-version.outputs.new-version }}
+  push-tag:
+    needs: build-and-push-with-ver
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Push new version tag
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.PUSH_GITHUB_TAG_TOKEN }}
+        REPO_OWNER: imaging8896
+        DEFAULT_BUMP: patch
