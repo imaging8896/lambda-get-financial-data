@@ -9,7 +9,7 @@ FROM base
 WORKDIR /wd
 
 COPY --from=builder /.local /wd
-COPY news /wd/data
+COPY data /wd/data
 COPY main.py /wd/main.py
 
 RUN pip install --target /wd awslambdaric
