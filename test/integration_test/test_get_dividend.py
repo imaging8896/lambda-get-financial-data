@@ -278,7 +278,7 @@ from data.constant import StockType
     ]),
 ])
 def test_get_dividend(year, stock_type, timeout, test_stock_id, expect_dividends):
-    results = get("https://mops.twse.com.tw/server-java/t05st09sub", year=year, stock_type=stock_type, timeout=timeout)[test_stock_id]
+    results = get("dividend", year=year, stock_type=stock_type, timeout=timeout)[test_stock_id]
 
     assert results == expect_dividends
 
@@ -287,9 +287,9 @@ def test_get_dividend(year, stock_type, timeout, test_stock_id, expect_dividends
 def test_get_latest_dividend(stock_type):
     now = datetime.now()
 
-    assert isinstance(get("https://mops.twse.com.tw/server-java/t05st09sub", year=now.year, stock_type=stock_type, timeout=20), dict)
+    assert isinstance(get("dividend", year=now.year, stock_type=stock_type, timeout=20), dict)
 
 
 @pytest.mark.parametrize("stock_type", [x.value for x in StockType])
 def test_get_no_dividend(stock_type):
-    assert {} == get("https://mops.twse.com.tw/server-java/t05st09sub", year=3000, stock_type=stock_type, timeout=20)
+    assert {} == get("dividend", year=3000, stock_type=stock_type, timeout=20)
