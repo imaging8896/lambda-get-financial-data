@@ -37,7 +37,11 @@ def get(data_type: str, mobile: bool = True, desktop: bool = True, **kw):
         return parser.data
 
 
-def get_news_raw_content(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, encoding: str = None, **request_kw):
+def _raise_for_status(response: requests.Response):
+    response.raise_for_status()
+
+
+def get_news_raw_content(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, encoding: str = None, handle_http_status_code = _raise_for_status, **request_kw):
     response = None
     
     try:
@@ -61,9 +65,7 @@ def get_news_raw_content(url: str, method: RequestMethod, mobile: bool = True, d
             response = get_news_raw_content_by_cloudscraper(url, method, desktop=False, ssl_context=ssl.create_default_context(), **request_kw)
 
     if response is not None:
-        if response.status_code == 404:
-            return ""
-        response.raise_for_status()
+        handle_http_status_code(response)
 
         if encoding is not None:
             response.encoding = encoding
