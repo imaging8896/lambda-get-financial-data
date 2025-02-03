@@ -69,6 +69,9 @@ class TwseDividendHTMLParser(DataHTMLParser):
         if self._has_title:
             return False
         if self._finished:
+            if not self._data_groups:
+                return False # No data
+
             header1 = self._data[0]
             header2 = self._data[1]
 
