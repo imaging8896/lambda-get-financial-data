@@ -56,13 +56,12 @@ class TwseOTCPriceRatioParser(DataParser):
                     return str(int(raw_year) + 1911)
                 
             def _parse_value(raw_value: str | None):
-                if raw_value in ["N/A", "null"]:
-                    return
-                if set(raw_value.replace(".", "")) == {"0"}:
-                    return "0"
-                if set(raw_value.split(".")[-1]) == {"0"}:
-                    raw_value = raw_value.split(".")[0]
-                return raw_value.replace(",", "").rstrip("0")
+                if raw_value is not None and raw_value not in ["N/A", "null"]:
+                    if set(raw_value.replace(".", "")) == {"0"}:
+                        return "0"
+                    if set(raw_value.split(".")[-1]) == {"0"}:
+                        raw_value = raw_value.split(".")[0]
+                    return raw_value.replace(",", "").rstrip("0")
 
             return PriceRatio(
                 year=str(self._working_date.year),

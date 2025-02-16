@@ -73,13 +73,12 @@ class TwsePublicPriceRatioParser(DataParser):
                     return str(int(raw_year) + 1911)
                 
             def _parse_value(raw_value: str | None):
-                if raw_value == "-":
-                    return
-                if set(raw_value.replace(".", "")) == {"0"}:
-                    return "0"
-                if set(raw_value.split(".")[-1]) == {"0"}:
-                    raw_value = raw_value.split(".")[0]
-                return raw_value.replace(",", "")
+                if raw_value is not None and raw_value != "-":
+                    if set(raw_value.replace(".", "")) == {"0"}:
+                        return "0"
+                    if set(raw_value.split(".")[-1]) == {"0"}:
+                        raw_value = raw_value.split(".")[0]
+                    return raw_value.replace(",", "")
 
             return PriceRatio(
                 year=str(self._working_date.year),
