@@ -33,7 +33,7 @@ class DataParser:
 
     @property
     def request_kw(self) -> dict:
-        raise NotImplementedError
+        return {}
 
     @property   
     def error(self) -> bool:
@@ -50,8 +50,6 @@ class DataParser:
         request_cloud_scraper_mobile = self.request_cloud_scraper_mobile
         request_cloud_scraper_desktop = self.request_cloud_scraper_desktop
         expected_status_codes = self.expected_status_codes
-        if request_kw is None:
-            raise RuntimeError("Request keyword is not set.")
 
         if self.request_method not in RequestMethod:
             raise ValueError(f"Unsupported method {self.request_method=}")
