@@ -84,7 +84,7 @@ def price_ratio_stock_type(request):
     ),
 ])
 def test_get_price_ratio(query_date, stock_type, expect_price_ratio):
-    results = get("price_ratio", query_date=query_date, stock_type=stock_type)
+    results = get("price_ratio", query_date=query_date.isoformat(), stock_type=stock_type)
 
     expect_stock_id_results = [result for result in results if result["stock_id"] == expect_price_ratio["stock_id"]]
     assert expect_stock_id_results
@@ -93,7 +93,7 @@ def test_get_price_ratio(query_date, stock_type, expect_price_ratio):
 
 
 def test_get_latest_price_ratio(price_ratio_stock_type):
-    now = datetime.now().date()
+    now = datetime.now().date().isoformat()
 
     results = get("price_ratio", query_date=now, stock_type=price_ratio_stock_type)
     assert isinstance(results, list)
@@ -102,9 +102,9 @@ def test_get_latest_price_ratio(price_ratio_stock_type):
 
 def test_get_no_price_ratio_error(price_ratio_stock_type):
     with pytest.raises(WrongDataFormat):
-        get("price_ratio", query_date=date(year=3000, month=2, day=12), stock_type=price_ratio_stock_type)
+        get("price_ratio", query_date=date(year=3000, month=2, day=12).isoformat(), stock_type=price_ratio_stock_type)
 
 
 def test_get_price_ratio_not_support_rotc():
     with pytest.raises(KeyError):
-        get("price_ratio", query_date=date(year=2009, month=2, day=12), stock_type="興櫃")
+        get("price_ratio", query_date=date(year=2009, month=2, day=12).isoformat(), stock_type="興櫃")
