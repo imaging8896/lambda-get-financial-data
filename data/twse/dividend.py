@@ -3,7 +3,7 @@ import re
 
 from collections import namedtuple
 
-from . import DataHTMLParser
+from ..parser.html_parser import DataHTMLParser
 from ..constant import StockType, RequestMethod
 
 
@@ -12,35 +12,18 @@ from ..constant import StockType, RequestMethod
 logger = logging.getLogger(__name__)
 
 
-def get_request_kw_and_parser(stock_type: str, year: str, timeout: str = None):
-    year = int(year)
-    stock_type = StockType(stock_type)
-    timeout = int(timeout) if timeout else 20
-    return TwseDividendHTMLParser(year), {
-        "method": RequestMethod.POST,
-        "url": "https://mops.twse.com.tw/server-java/t05st09sub",
-        "data": {
-            "step": 1,
-            "TYPEK": {
-                StockType.PUBLIC: "sii",
-                StockType.OTC: "otc",
-                StockType.ROTC: "rotc",
-            }[stock_type],
-            "YEAR": f"{year - 1911}",
-            "first": "",
-            "qryType": 1,
-        },
-        "timeout": timeout,
-        "encoding": "big5",
-    }
-
-
 class TwseDividendHTMLParser(DataHTMLParser):
 
-    def __init__(self, year, *, convert_charrefs: bool = True) -> None:
-        super().__init__(convert_charrefs=convert_charrefs)
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, year: str, timeout: str = None) -> None:
+        super().__init__(
+            request_method=RequestMethod.POST,
+            request_cloud_scraper_mobile=request_cloud_scraper_mobile,
+            request_cloud_scraper_desktop=request_cloud_scraper_desktop,
+        )
 
-        self.year = year
+        self.stock_type = StockType(stock_type)
+        self.year = int(year)
+        self.timeout = int(timeout) if timeout else 20
 
         self._finished = False
 
@@ -65,10 +48,34 @@ class TwseDividendHTMLParser(DataHTMLParser):
             self.expect_header2 = ('盈餘分配', '法定盈餘', '股東配發', '盈餘轉', '法定盈餘', '股東配股', '現金紅利', '股票紅利', '股票紅利', '股票紅利')
 
     @property
+    def request_url(self) -> str:
+        return "https://mops.twse.com.tw/server-java/t05st09sub"
+
+    @property
+    def request_kw(self) -> dict:
+        return {
+        "data": {
+            "step": 1,
+            "TYPEK": {
+                StockType.PUBLIC: "sii",
+                StockType.OTC: "otc",
+                StockType.ROTC: "rotc",
+            }[self.stock_type],
+            "YEAR": f"{self.year - 1911}",
+            "first": "",
+            "qryType": 1,
+        },
+        "timeout": self.timeout,
+    }
+
+    @property
     def error(self) -> bool:
         if self._has_title:
             return False
         if self._finished:
+            if not self._data_groups:
+                return False # No data
+
             header1 = self._data[0]
             header2 = self._data[1]
 
@@ -129,6 +136,11 @@ class TwseDividendHTMLParser(DataHTMLParser):
                 data[stock_id].append(dividend)
         
         return data
+    
+    def parse_response(self) -> None:
+        response = self.request()
+        response.encoding = "big5"
+        self.feed(response.text)
 
     def handle_starttag(self, tag, attrs):
         self._stack.append(tag)

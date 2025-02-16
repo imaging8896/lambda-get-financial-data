@@ -1,3 +1,5 @@
+import requests
+
 from html.parser import HTMLParser
 
 
@@ -15,3 +17,6 @@ class DataHTMLParser(HTMLParser):
     @property
     def data(self) -> dict:
         return self._data
+    
+    def process_response(self, response: requests.Response) -> None:
+        self.feed(response.text)
