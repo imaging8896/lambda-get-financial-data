@@ -18,12 +18,14 @@ logger = logging.getLogger(__name__)
 
 class TwseOTCPriceRatioParser(DataParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, query_date: date) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, query_date: str) -> None:
         super().__init__(
             request_method=RequestMethod.POST,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
+        query_date = date.fromisoformat(query_date)
+
         self._working_date = None
         self._last_working_date_generator = last_working_date_generator(query_date)
         self._data: list[dict] = None
