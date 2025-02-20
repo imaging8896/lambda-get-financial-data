@@ -5,6 +5,7 @@ import random
 import ssl
 import contextlib
 
+from requests.adapters import HTTPAdapter, Retry
 from cloudscraper import CloudScraper
 
 from ..constant import RequestMethod
@@ -109,6 +110,11 @@ def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = Tru
         scraper = CloudScraper(browser={"dessktop": False, "browser": "chrome"}, ssl_context=ssl_context)
     else:
         scraper = CloudScraper(ssl_context=ssl_context)
+
+    scraper.mount(
+        url, 
+        HTTPAdapter(max_retries=Retry(total=5, backoff_factor=2.1)),
+    )
 
     if method == RequestMethod.POST:
         return scraper.post(url, verify=ssl_context is None, **request_kw)
