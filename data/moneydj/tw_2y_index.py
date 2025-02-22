@@ -41,7 +41,7 @@ class MoneydjTWIndex2YPriceParser(DataParser):
         response_text = response.text.strip("$")
 
         times_str, response_text = response_text.split(" ", 1)
-        dates = [datetime.strptime(time_str, "%Y%m%d").date() for time_str in times_str.split(",")]
+        dates = [datetime.strptime(time_str, "%Y%m%d").date().isoformat() for time_str in times_str.split(",")]
 
         openings_str, response_text = response_text.split(" ", 1)
         openings = [opening for opening in openings_str.split(",")]
