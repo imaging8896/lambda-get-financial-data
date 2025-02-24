@@ -16,7 +16,7 @@ class TwseDividendHTMLParser(DataHTMLParser):
 
     def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, year: str, timeout: str = None) -> None:
         super().__init__(
-            request_method=RequestMethod.POST,
+            request_method=RequestMethod.GET,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
@@ -49,24 +49,18 @@ class TwseDividendHTMLParser(DataHTMLParser):
 
     @property
     def request_url(self) -> str:
-        return "https://mops.twse.com.tw/server-java/t05st09sub"
+        tpek = {
+            StockType.PUBLIC: "sii",
+            StockType.OTC: "otc",
+            StockType.ROTC: "rotc",
+        }[self.stock_type]
+        return f"https://mopsov.twse.com.tw/server-java/t05st09sub?YEAR={self.year - 1911}&qryType=1&TYPEK={tpek}&step=1"
 
     @property
     def request_kw(self) -> dict:
         return {
-        "data": {
-            "step": 1,
-            "TYPEK": {
-                StockType.PUBLIC: "sii",
-                StockType.OTC: "otc",
-                StockType.ROTC: "rotc",
-            }[self.stock_type],
-            "YEAR": f"{self.year - 1911}",
-            "first": "",
-            "qryType": 1,
-        },
-        "timeout": self.timeout,
-    }
+            "timeout": self.timeout,
+        }
 
     @property
     def error(self) -> bool:
@@ -228,30 +222,6 @@ def _fill_empty_fields(year: int, stock_id: str, row_data: list[str]):
             row_data[11], row_data[12], row_data[14], row_data[15], row_data[16] = "1.0", "0.0", "0.0", "0.0", "0"
 
         else:
-            if row_data[13] == "0":
-                if row_data[11] not in {"0.0", "0", ""} or row_data[12] not in {"0.0", "0", ""}:
-                    raise RuntimeError(f"Stock `{stock_id}`, year `{year}` without cash total with cashes")
-            elif row_data[13] == "":
-                pass
-            else:
-                if row_data[11] in {"0.0", "0", ""} and row_data[12] in {"0.0", "0", ""}:
-                    if year == 2018 and stock_id == "3447":
-                        pass # TWSE wrong data
-                    else:
-                        raise RuntimeError(f"Stock `{stock_id}`, year `{year}` with cash total without cash")
-
-            if row_data[16] == "0":
-                if row_data[14] not in {"0.0", "0", ""} or row_data[15] not in {"0.0", "0", ""}:
-                    raise RuntimeError(f"Stock `{stock_id}`, year `{year}` without share total with shares")
-            elif row_data[16] == "":
-                pass
-            else:
-                if row_data[14] in {"0.0", "0", ""} and row_data[15] in {"0.0", "0", ""}:
-                    if year == 2018 and stock_id == "3447":
-                        pass # TWSE wrong data
-                    else:
-                        raise RuntimeError(f"Stock `{stock_id}`, year `{year}` with share total without share")
-
             for i in range(11, 17):
                 row_data[i] = row_data[i] if row_data[i] else "0"
 
