@@ -1,10 +1,10 @@
 import logging
-import json
 import itertools
 import enum
 
 from datetime import datetime
 
+from . import RedirectOldParser
 from ..parser.html_parser import DataHTMLParser, DataParser
 from ..constant import StockType, RequestMethod
 from ..exception import WrongDataFormat
@@ -15,22 +15,15 @@ from ..exception import WrongDataFormat
 logger = logging.getLogger(__name__)
 
 
-class TwseStockParser(DataParser):
+class TwseStockParser(RedirectOldParser):
     def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, timeout: str = None) -> None:
         super().__init__(
-            request_method=RequestMethod.POST,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
 
         self.stock_type = StockType(stock_type)
         self.timeout = int(timeout) if timeout else 20
-
-        self.internal_parser = None
-
-    @property
-    def request_url(self) -> str:
-        return "https://mops.twse.com.tw/mops/api/redirectToOld"
 
     @property
     def request_kw(self) -> dict:
@@ -52,28 +45,9 @@ class TwseStockParser(DataParser):
             },
             "timeout": self.timeout,
         }
-
-    @property
-    def data(self) -> dict:
-        return self.internal_parser.data
-
-    def parse_response(self) -> None:
-        response = self.request()
-
-        response.raise_for_status()
-
-        try:
-            response_json = response.json()
-        except json.JSONDecodeError:
-            raise Exception(f"Unable to parse response\n{response.text}")
-
-        if response_json["code"] != 200:
-            msg = f"Unexpected code in {response_json}"
-            raise Exception(msg)
-        
-        url = response_json["result"]["url"]
-        self.internal_parser = _TwseStockHTMLParser(self.request_cloud_scraper_mobile, self.request_cloud_scraper_desktop, self.stock_type, url, self.timeout)
-        self.internal_parser.parse_response()
+    
+    def get_internal_parser(self, url: str) -> DataParser:
+        return _TwseStockHTMLParser(self.request_cloud_scraper_mobile, self.request_cloud_scraper_desktop, self.stock_type, url, self.timeout)
         
 
 class FinancialReportType(enum.Enum):
