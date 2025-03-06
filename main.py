@@ -1,6 +1,11 @@
 import traceback
+import logging
+import sys
 
 from data import get
+
+
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(sys.stdout)])
 
 
 def handler(event=None, context=None):
