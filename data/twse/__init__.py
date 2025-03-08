@@ -1,7 +1,8 @@
 import json
+import time
 
 from ..parser import DataParser
-from ..constant import StockType, RequestMethod
+from ..constant import RequestMethod
 
 
 class RedirectOldParser(DataParser):
@@ -40,5 +41,7 @@ class RedirectOldParser(DataParser):
             msg = f"Unexpected code in {response_json}"
             raise Exception(msg)
         
+        time.sleep(1.26) # Small delay
+
         self.internal_parser = self.get_internal_parser(response_json["result"]["url"])
         self.internal_parser.parse_response()
