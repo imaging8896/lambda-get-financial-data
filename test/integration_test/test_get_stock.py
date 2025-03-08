@@ -1,5 +1,6 @@
 import pytest
 import time
+import requests
 
 from data import get
 
@@ -16,12 +17,16 @@ from data import get
     ]),
 ])
 def test_get_stock(stock_type, expect_stocks):
-    try:
-        results = get("stock", stock_type=stock_type, timeout=60)
-    except Exception:
-        time.sleep(2.3)
-        results = get("stock", stock_type=stock_type, timeout=60)
-    time.sleep(2.3)
+    results = None
+    for _ in range(5):
+        try:
+            results = get("stock", stock_type=stock_type, timeout=60)
+            break
+        except requests.exceptions.HTTPError as e:
+            print(e)
+            time.sleep(2.3)
+
+    assert results is not None, "Failed to get stock data"
 
     for expect_stock in expect_stocks:
         assert expect_stock in results

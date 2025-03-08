@@ -1,5 +1,6 @@
 import pytest
 import time
+import requests
 
 from datetime import datetime
 
@@ -26,24 +27,31 @@ else:
     LAST_LAST_QUARTER = LAST_QUARTER - 1
 
 
+def _call_get_stocks_balance_sheet(year: int, stock_type: str, quarter: int):
+    for _ in range(5):
+        try:
+            return get("stocks_balance_sheet", year=year, stock_type=stock_type, quarter=quarter)
+        except requests.exceptions.HTTPError as e:
+            print(e)
+            time.sleep(3.14)
+    raise Exception("Unable to get stocks_balance_sheet")
+
+
 @pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
 def test_get_this_quarter(stock_type):
-    results = get("stocks_balance_sheet", year=THIS_QUARTER_YEAR, stock_type=stock_type, quarter=THIS_QUARTER)
-    time.sleep(2.12)
+    results = _call_get_stocks_balance_sheet(THIS_QUARTER_YEAR, stock_type, THIS_QUARTER)
     assert results == []
 
 
 @pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
 def test_get_last_quarter(stock_type):
-    results = get("stocks_balance_sheet", year=LAST_QUARTER_YEAR, stock_type=stock_type, quarter=LAST_QUARTER)
-    time.sleep(3.32)
+    results = _call_get_stocks_balance_sheet(LAST_QUARTER_YEAR, stock_type, LAST_QUARTER)
     assert isinstance(results, list)
 
 
 @pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
 def test_get_last_last_quarter(stock_type):
-    results = get("stocks_balance_sheet", year=LAST_LAST_QUARTER_YEAR, stock_type=stock_type, quarter=LAST_LAST_QUARTER)
-    time.sleep(1.92)
+    results = _call_get_stocks_balance_sheet(LAST_LAST_QUARTER_YEAR, stock_type, LAST_LAST_QUARTER)
 
     assert results != []
     for result in results:
