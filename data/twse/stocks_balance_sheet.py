@@ -1,18 +1,11 @@
-import logging
-import itertools
-import enum
-
 from collections import namedtuple
 
-from . import RedirectOldParser
-from ..parser.html_parser import DataHTMLParser, DataParser
+from . import RedirectOldParser, TwseHTMLTableParser
+from ..parser.html_parser import DataParser
 from ..constant import StockType, RequestMethod
-from ..exception import WrongDataFormat
 
 
 # https://mops.twse.com.tw/mops/#/web/t163sb05
-
-logger = logging.getLogger(__name__)
 
 
 class TwseStocksBalanceSheetParser(RedirectOldParser):
@@ -54,126 +47,22 @@ class TwseStocksBalanceSheetParser(RedirectOldParser):
         return _TwseStocksBalanceSheetHTMLParser(self.request_cloud_scraper_mobile, self.request_cloud_scraper_desktop, self.stock_type, url, self.timeout)
 
 
-class FinancialReportType(enum.Enum):
-    INDIVIDUAL = "個別"
-    CONSOLIDATED = "合併"
-
-
-class DividendAssignPeriod(enum.Enum):
-    YEARLY = "每年"
-    QUARTERLY = "每季"
-    HALF_YEARLY = "每半會計年度"
-
-
-class DividendAssignDecideLevel(enum.Enum):
-    BOARD = "董事會"
-    SHAREHOLDER = "股東會"
-
-
-class _TwseStocksBalanceSheetHTMLParser(DataHTMLParser):
+class _TwseStocksBalanceSheetHTMLParser(TwseHTMLTableParser):
 
     def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, url: str, timeout: str = None) -> None:
         super().__init__(
-            request_method=RequestMethod.GET,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
+            request_method=RequestMethod.GET,
+            url=url,
+            timeout=timeout,
         )
 
-        self.url = url
         self.stock_type = stock_type
-        self.timeout = int(timeout) if timeout else 20
-
-        self._table_index = 0
-        self._td_row = []
-        self._th_row = []
-        self._current_th_value = None
-
-        self._row_header = None
-        self._rows = []
-        self._data = []
-
-        # self._is_no_data = False
-
-    @property
-    def request_url(self) -> str:
-        return self.url
-
-    @property
-    def request_kw(self) -> dict:
-        return {
-            "timeout": self.timeout,
-        }
 
     @property
     def data(self) -> dict:
         return [_to_data(raw_data) for raw_data in self._data]
-    
-    def parse_response(self) -> None:
-        response = self.request()
-        self.feed(response.text)
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "div" and ("id", "div01") in attrs:
-            self._stack.append(tag)
-        elif self._stack:
-            self._stack.append(tag)
-            if tag == "table":
-                self._table_index += 1
-
-        if self._stack and self._stack[-1] == "th":
-            self._current_th_value = ""
-
-    def handle_endtag(self, tag):
-        if tag not in self._stack and tag == "td": # OTC 2024 4
-            logger.warning(f"Tag {tag} not in stack {self._stack}")
-            tag = "th"
-
-        super().handle_endtag(tag)
-
-        if self._table_index >= 2:
-            if tag == "th":
-                self._th_row.append(self._current_th_value)
-                self._current_th_value = None
-            if tag == "tr":
-                if self._th_row:
-                    if self._row_header is not None:
-                        raise WrongDataFormat(f"There are row headers\n{self._th_row=}\nand\n{self._row_header=}")
-                    self._row_header = self._th_row
-                    self._th_row = []
-                if self._td_row:
-                    self._rows.append(self._td_row)
-                    self._td_row = []
-            if tag == "table":
-                self._data.extend([self._to_row_data_dict(self._row_header, row) for row in self._rows])
-                self._row_header = None
-                self._rows = []
-
-    @staticmethod
-    def _to_row_data_dict(headers, row):
-        def _to_none(value):
-            return "0" if value == "--" else value
-
-        row = [_to_none(value) for value in row]
-        if len(row) == len(headers):
-            return dict(zip(headers, row))
-        else:
-            pairs = list(itertools.zip_longest(headers, row))
-            msg = f"Row size not match. {len(row)=} != {len(headers)=}\n{pairs=}"
-            raise WrongDataFormat(msg)
-                    
-    def handle_data(self, data):
-        if self._table_index >= 2:
-            if self.is_in_tag("th"):
-                self._current_th_value = data.strip().strip("\xa0")
-
-            if self.is_in_tag("td") or self.is_in_tags(["td", "a"]):
-                self._td_row.append(data.strip().strip("\xa0"))
-
-            if self.is_in_tags(["td", "br"]):
-                self._td_row[-1] += f"\n{data.strip().strip('\xa0')}"
-
-        # if self.is_in_tag("font") and data.strip().strip('\xa0') == "查詢無資料！":
-        #     self._is_no_data = True
 
 
 BasicFields = namedtuple("BasicFields", [
@@ -201,6 +90,8 @@ def _to_data(raw_data):
         for key in keys:
             if key in raw_data:
                 v = raw_data.pop(key).replace(",", "")
+                v = "0" if v == "--" else v
+
                 if is_money and v != "0":
                     return v + "000"
                 return v
