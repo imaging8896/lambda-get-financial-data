@@ -7,6 +7,7 @@ from .twse import dividend
 from .twse import price_ratio
 from .twse import stock
 from .twse import stocks_balance_sheet
+from .twse import stocks_profit_sheet
 
 
 logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ def get(data_type: str, mobile: bool = True, desktop: bool = True, **kw):
         "stock": stock.TwseStockParser,
         "tw_2y_index": tw_2y_index.MoneydjTWIndex2YPriceParser,
         "stocks_balance_sheet": stocks_balance_sheet.TwseStocksBalanceSheetParser,
+        "stocks_profit_sheet": stocks_profit_sheet.TwseStocksProfitSheetParser,
     }[data_type](mobile, desktop, **kw)
 
     parser.parse_response()
