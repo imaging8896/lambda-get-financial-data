@@ -63,7 +63,7 @@ class DataParser:
             **request_kw,
         )
         if response.status_code not in expected_status_codes:
-            raise requests.exceptions.HTTPError(f"Unexpected status code: {response.status_code}")
+            raise requests.exceptions.HTTPError(f"Unexpected status code: {response.status_code}\n{response.text}")
         return response
 
     def parse_response(self) -> None:
