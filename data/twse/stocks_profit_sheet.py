@@ -162,7 +162,7 @@ def _to_data(raw_data, year, quarter):
                 "non_interest_revenue": _pop_from_keys(["利息以外淨損益", "利息以外淨收益"], default_none=True),
             },
             profit_before_tax=_pop_from_keys(["稅前淨利（淨損）", "繼續營業單位稅前淨利（淨損）", "繼續營業單位稅前損益", "繼續營業單位稅前純益（純損）"]),
-            income_tax=_pop_from_keys(["所得稅費用（利益）", "所得稅（費用）利益", "所得稅利益（費用）"], default_none=True),
+            income_tax=_pop_from_keys(["所得稅費用（利益）", "所得稅（費用）利益", "所得稅利益（費用）"]),
             profit=_pop_from_keys(["本期淨利（淨損）", "本期稅後淨利（淨損）"]),
             # 讓股東 "賺/虧" 到，但是卻不能認列在 "本期損益" 的項目。
             # 1、備供出售金融資產之未實現評價損益
@@ -172,7 +172,7 @@ def _to_data(raw_data, year, quarter):
             # 5、符合條件之 確定福利計畫精算損益
             # 6、採用權益法認列所享有 之關聯企業及合資 的其他綜合損益
             # 例如花10億投資某公司，結果該公司股票價值只剩8億，這個2億的虧損，會被記在這裡。
-            other_profit=_pop_from_keys(["其他綜合損益（淨額）", "其他綜合損益（稅後）", "本期其他綜合損益（稅後淨額）", "其他綜合損益（稅後淨額）", "其他綜合損益"], default_none=True),
+            other_profit=_pop_from_keys(["其他綜合損益（淨額）", "其他綜合損益（稅後）", "本期其他綜合損益（稅後淨額）", "其他綜合損益（稅後淨額）", "其他綜合損益"]),
             other_profit_from_merged_company=_pop_from_keys(["合併前非屬共同控制股權綜合損益淨額"], default_none=True),
             comprehensive_profit=_pop_from_keys(["本期綜合損益總額", "本期綜合損益總額（稅後）"]),
             profit_detail={

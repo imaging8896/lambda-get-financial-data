@@ -18,13 +18,13 @@ from data import get
 ])
 def test_get_stock(stock_type, expect_stocks):
     results = None
-    for _ in range(5):
+    for i in range(5):
         try:
             results = get("stock", stock_type=stock_type, timeout=60)
             break
         except requests.exceptions.HTTPError as e:
             print(e)
-            time.sleep(2.3)
+            time.sleep(2.3 * (i + 1))
 
     assert results is not None, "Failed to get stock data"
 

@@ -28,12 +28,12 @@ else:
 
 
 def _call_get_stocks_profit_sheet(year: int, stock_type: str, quarter: int):
-    for _ in range(5):
+    for i in range(5):
         try:
-            return get("stocks_profit_sheet", year=year, stock_type=stock_type, quarter=quarter)
+            return get("stocks_profit_sheet", year=year, stock_type=stock_type, quarter=quarter, timeout=60)
         except requests.exceptions.HTTPError as e:
             print(e)
-            time.sleep(3.14)
+            time.sleep(3.14 * (i + 1))
     raise Exception("Unable to get stocks_profit_sheet")
 
 
