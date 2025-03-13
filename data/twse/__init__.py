@@ -10,6 +10,7 @@ from ..exception import WrongDataFormat
 
 
 logger = logging.getLogger("twse")
+logger.setLevel(logging.INFO)
 
 
 class RedirectOldParser(DataParser):
