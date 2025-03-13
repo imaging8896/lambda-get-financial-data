@@ -75,7 +75,7 @@ def price_ratio_stock_type(request):
             'stock_id': '4416', 
             'close_price': None, 
             'return_rate': '2.62', 
-            'dividend_year': '2023', 
+            'dividend_year': '2024', 
             'per': '948.75', 
             'pa': '3.03', 
             'calculated_financial_year': '2024', 
