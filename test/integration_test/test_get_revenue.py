@@ -10,7 +10,7 @@ from data import get, constant
 NOW = datetime.now()
 
 THIS_MONTH_YEAR = NOW.year
-THIS_MONTH = NOW.month // 4 + 1
+THIS_MONTH = NOW.month
 
 if THIS_MONTH == 1:
     LAST_MONTH_YEAR = THIS_MONTH_YEAR - 1
