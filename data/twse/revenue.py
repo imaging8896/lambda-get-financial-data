@@ -61,12 +61,14 @@ class TwseRevenueParser(DataParser):
                 raise WrongDataFormat(f"Expect {self.year} {self.month}. Got {year} {month}")
 
         def _parse_value(value: str):
-            if value == "-":
+            if value in {"-", ""}:
+                return
+            if value == "0":
                 return "0"
-            return value + "1000"
+            return value + "000"
         
         def _parse_percent(value: str):
-            if value == "-":
+            if value in {"-", ""}:
                 return
             return value
         
