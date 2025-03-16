@@ -33,7 +33,7 @@ def _call_get_stocks_balance_sheet(year: int, stock_type: str, quarter: int):
             return get("stocks_balance_sheet", year=year, stock_type=stock_type, quarter=quarter, timeout=60)
         except requests.exceptions.HTTPError as e:
             print(e)
-            time.sleep(3.14 * (i + 1))
+            time.sleep(8.64 * (i + 1))
     raise Exception("Unable to get stocks_balance_sheet")
 
 
