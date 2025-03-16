@@ -5,6 +5,7 @@ import requests
 from datetime import datetime
 
 from data import get, constant
+from data.exception import BlockingByWebsiteError
 
 
 NOW = datetime.now()
@@ -31,9 +32,9 @@ def _call_get_stocks_balance_sheet(year: int, stock_type: str, quarter: int):
     for i in range(5):
         try:
             return get("stocks_balance_sheet", year=year, stock_type=stock_type, quarter=quarter, timeout=60)
-        except requests.exceptions.HTTPError as e:
+        except (requests.exceptions.HTTPError, BlockingByWebsiteError) as e:
             print(e)
-            time.sleep(8.64 * (i + 1))
+            time.sleep(2.64 * (i + 1))
     raise Exception("Unable to get stocks_balance_sheet")
 
 
