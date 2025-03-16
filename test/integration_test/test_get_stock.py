@@ -3,6 +3,7 @@ import time
 import requests
 
 from data import get
+from data.exception import BlockingByWebsiteError
 
 
 @pytest.mark.parametrize("stock_type, expect_stocks", [
@@ -22,7 +23,7 @@ def test_get_stock(stock_type, expect_stocks):
         try:
             results = get("stock", stock_type=stock_type, timeout=60)
             break
-        except requests.exceptions.HTTPError as e:
+        except (requests.exceptions.HTTPError, BlockingByWebsiteError) as e:
             print(e)
             time.sleep(2.3 * (i + 1))
 

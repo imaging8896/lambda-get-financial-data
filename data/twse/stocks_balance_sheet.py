@@ -44,12 +44,12 @@ class TwseStocksBalanceSheetParser(RedirectOldParser):
         }
     
     def get_internal_parser(self, url: str) -> DataParser:
-        return _TwseStocksBalanceSheetHTMLParser(self.request_cloud_scraper_mobile, self.request_cloud_scraper_desktop, self.stock_type, url, self.timeout)
+        return _TwseStocksBalanceSheetHTMLParser(self.request_cloud_scraper_mobile, self.request_cloud_scraper_desktop, self.stock_type, self.year, self.quarter, url, self.timeout)
 
 
 class _TwseStocksBalanceSheetHTMLParser(TwseHTMLTableParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, url: str, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, year: int, quarter: int, url: str, timeout: str = None) -> None:
         super().__init__(
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
@@ -59,10 +59,12 @@ class _TwseStocksBalanceSheetHTMLParser(TwseHTMLTableParser):
         )
 
         self.stock_type = stock_type
+        self.year = year
+        self.quarter = quarter
 
     @property
     def data(self) -> dict:
-        return [_to_data(raw_data) for raw_data in self._data]
+        return [_to_data(raw_data, self.stock_type, self.year, self.quarter) for raw_data in self._data]
 
 
 BasicFields = namedtuple("BasicFields", [
@@ -85,7 +87,8 @@ BasicFields = namedtuple("BasicFields", [
 ])
 
 
-def _to_data(raw_data):
+def _to_data(raw_data: dict, stock_type: StockType, year: int, quarter: int):
+
     def _pop_from_keys(keys, default_none=False, is_money=True):
         for key in keys:
             if key in raw_data:
@@ -99,6 +102,18 @@ def _to_data(raw_data):
             return
         msg = f"Keys {keys} not in data {raw_data}"
         raise KeyError(msg)
+    
+
+    stock_id = _pop_from_keys(["公司"], is_money=False)
+    total_equity_of_this_company = _pop_from_keys(["歸屬於母公司業主權益合計", "歸屬於母公司業主之權益合計", "歸屬於母公司業主之權益"])
+    total_equity = _pop_from_keys(["權益總計", "權益總額", "權益合計"])
+
+    
+    def _get_non_control_equity():
+        if year <= 2017 and "非控制權益" not in raw_data:
+            return str(int(total_equity) - int(total_equity_of_this_company))
+        return _pop_from_keys(["非控制權益"])
+
 
     return {
         "assets_detail": {
@@ -176,18 +191,18 @@ def _to_data(raw_data):
         "virtual_currency": _pop_from_keys(["權益－具證券性質之虛擬通貨", "權益─具證券性質之虛擬通貨"], default_none=True),
         "share_of_child_merge_from": _pop_from_keys(["合併前非屬共同控制股權"], default_none=True),
         **BasicFields(
-            id=_pop_from_keys(["公司"], is_money=False),
+            id=stock_id,
             assets=_pop_from_keys(["資產總計", "資產總額", "資產合計"]),
             liabilities=_pop_from_keys(["負債總計", "負債總額", "負債合計"]),
             share_capital=_pop_from_keys(["股本"]),
             capital_surplus=_pop_from_keys(["資本公積"]),
             retained_earnings=_pop_from_keys(["保留盈餘（或累積虧損）", "保留盈餘"]),
             other_equity=_pop_from_keys(["其他權益"]),
-            treasure_stock=_pop_from_keys(["庫藏股票"]),
-            total_equity_of_this_company=_pop_from_keys(["歸屬於母公司業主權益合計", "歸屬於母公司業主之權益合計", "歸屬於母公司業主之權益"]),
+            treasure_stock=_pop_from_keys(["庫藏股票", "庫藏股"]),
+            total_equity_of_this_company=total_equity_of_this_company,
             equity_of_child_merge_from=_pop_from_keys(["共同控制下前手權益"]),
-            non_control_equity=_pop_from_keys(["非控制權益"]),
-            equity=_pop_from_keys(["權益總計", "權益總額", "權益合計"]),
+            non_control_equity=_get_non_control_equity(),
+            equity=total_equity,
             net_worth=_pop_from_keys(["每股參考淨值"], is_money=False),
         )._asdict(),
     }

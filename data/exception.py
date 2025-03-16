@@ -4,3 +4,7 @@ class WebsiteMaintaince(Exception):
 
 class WrongDataFormat(Exception):
     pass
+
+
+class BlockingByWebsiteError(Exception):
+    pass

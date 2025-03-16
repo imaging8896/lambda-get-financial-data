@@ -6,7 +6,7 @@ import logging
 from ..parser import DataParser
 from ..parser.html_parser import DataHTMLParser
 from ..constant import RequestMethod
-from ..exception import WrongDataFormat
+from ..exception import WrongDataFormat, BlockingByWebsiteError
 
 
 logger = logging.getLogger("twse")
@@ -43,6 +43,10 @@ class RedirectOldParser(DataParser):
         try:
             response_json = response.json()
         except json.JSONDecodeError:
+            if "THE PAGE CANNOT BE ACCESSED!" in response.text:
+                msg = f"THE PAGE CANNOT BE ACCESSED!\n{response.text}"
+                logger.info(msg)
+                raise BlockingByWebsiteError("THE PAGE CANNOT BE ACCESSED!")
             raise Exception(f"Unable to parse response\n{response.text}")
 
         if response_json["code"] != 200:
