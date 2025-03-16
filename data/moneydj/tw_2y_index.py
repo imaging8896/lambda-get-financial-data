@@ -68,14 +68,37 @@ class MoneydjTWIndex2YPriceParser(DataParser):
         if len(volumes) != len(dates):
             raise WrongDataFormat(f"Volumes length not equal to dates length for {response.url}")
         
+        margin_financing_balances_str, response_text = response_text.split(" ", 1)
+        margin_financing_balances = [margin_financing_balance + "000000" for margin_financing_balance in margin_financing_balances_str.split(",")]
+        if len(margin_financing_balances) != len(dates):
+            raise WrongDataFormat(f"Margin financing balances length not equal to dates length for {response.url}")
+        
+        short_selling_amounts_str, response_text = response_text.split(" ", 1)
+        short_selling_amounts = [short_selling_amount + "000" for short_selling_amount in short_selling_amounts_str.split(",")]
+        if len(short_selling_amounts) != len(dates):
+            raise WrongDataFormat(f"Short selling amounts length not equal to dates length for {response.url}")
+        
+        day_trading_amounts_str = response_text
+        day_trading_amounts = [day_trading_amount + "000" for day_trading_amount in day_trading_amounts_str.split(",")]
+        if len(day_trading_amounts) != len(dates):
+            raise WrongDataFormat(f"Day trading amounts length not equal to dates length for {response.url}")
+
         self._data = [
-            Price(
-                date=date,
-                opening=opening,
-                highest=highest,
-                lowest=lowest,
-                closing=closing,
-                volume=volume,
-            )._asdict()
-            for date, opening, highest, lowest, closing, volume in zip(dates, openings, highests, lowests, closings, volumes, strict=True)
+            {
+                **Price(
+                    date=date,
+                    opening=opening,
+                    highest=highest,
+                    lowest=lowest,
+                    closing=closing,
+                    volume=volume,
+                )._asdict(),
+                **dict(
+                    margin_financing_balance=margin_financing_balance,
+                    short_selling_amount=short_selling_amount,
+                    day_trading_amount=day_trading_amount,
+                )
+            }
+            for date, opening, highest, lowest, closing, volume, margin_financing_balance, short_selling_amount, day_trading_amount
+            in zip(dates, openings, highests, lowests, closings, volumes, margin_financing_balances, short_selling_amounts, day_trading_amounts, strict=True)
         ]
