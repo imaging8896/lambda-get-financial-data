@@ -1,4 +1,4 @@
-import json
+import requests
 import time
 import itertools
 import logging
@@ -42,7 +42,7 @@ class RedirectOldParser(DataParser):
 
         try:
             response_json = response.json()
-        except json.JSONDecodeError:
+        except requests.exceptions.JSONDecodeError:
             if "THE PAGE CANNOT BE ACCESSED!" in response.text:
                 msg = f"THE PAGE CANNOT BE ACCESSED!\n{response.text}"
                 logger.info(msg)
