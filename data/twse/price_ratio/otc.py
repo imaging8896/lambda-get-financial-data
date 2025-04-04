@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+import requests
 
 from datetime import date
 
@@ -82,7 +83,11 @@ class TwseOTCPriceRatioParser(DataParser):
         while True:
             response = self.request()
 
-            data = response.json()
+            try:
+                data = response.json()
+            except requests.exceptions.JSONDecodeError:
+                msg = f"Unable to parse response to json\n{response.text}"
+                raise RuntimeError(msg)
 
             if "tables" not in data:
                 raise WrongDataFormat(f"No 'tables' key for {response.url}. Got\n{data}")
