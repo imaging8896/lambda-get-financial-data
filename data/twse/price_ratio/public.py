@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+import requests
 
 from collections import namedtuple
 from datetime import date
@@ -101,7 +102,12 @@ class TwsePublicPriceRatioParser(DataParser):
             if response.status_code == 404:
                 raise WebsiteMaintaince(f"Maybe maintaince try again later for {response.url}")
 
-            data = response.json()
+            try:
+                data = response.json()
+            except requests.exceptions.JSONDecodeError:
+                msg = f"Unable to parse response to json\n{response.text}"
+                raise RuntimeError(msg)
+
             if data.get("stat") == "OK":
                 if title := data.get("title"):
                     logger.info(f"Title '{title}'")
