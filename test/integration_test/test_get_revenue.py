@@ -27,29 +27,29 @@ else:
     LAST_LAST_MONTH = LAST_MONTH - 1
 
 
-def _call_get_revenue(year: int, month: int, stock_type: str):
+def _call_get_revenue(year: int, month: int, stock_type: constant.StockType):
     for i in range(5):
         try:
-            return get("revenue", year=year, stock_type=stock_type, month=month, timeout=60)
+            return get("revenue", year=year, stock_type=stock_type.value, month=month, timeout=60)
         except requests.exceptions.HTTPError as e:
             print(e)
             time.sleep(3.14 * (i + 1))
     raise Exception("Unable to get stocks_balance_sheet")
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
+@pytest.mark.parametrize("stock_type", [x for x in constant.StockType])
 def test_get_this_month(stock_type):
     results = _call_get_revenue(THIS_MONTH_YEAR, THIS_MONTH, stock_type)
     assert results == []
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
+@pytest.mark.parametrize("stock_type", [x for x in constant.StockType])
 def test_get_last_month(stock_type):
     results = _call_get_revenue(LAST_MONTH_YEAR, LAST_MONTH, stock_type)
     assert isinstance(results, list)
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
+@pytest.mark.parametrize("stock_type", [x for x in constant.StockType])
 def test_get_last_last_month(stock_type):
     results = _call_get_revenue(LAST_LAST_MONTH_YEAR, LAST_LAST_MONTH, stock_type)
 

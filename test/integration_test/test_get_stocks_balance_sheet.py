@@ -28,29 +28,29 @@ else:
     LAST_LAST_QUARTER = LAST_QUARTER - 1
 
 
-def _call_get_stocks_balance_sheet(year: int, stock_type: str, quarter: int):
+def _call_get_stocks_balance_sheet(year: int, stock_type: constant.StockType, quarter: int):
     for i in range(5):
         try:
-            return get("stocks_balance_sheet", year=year, stock_type=stock_type, quarter=quarter, timeout=60)
+            return get("stocks_balance_sheet", year=year, stock_type=stock_type.value, quarter=quarter, timeout=60)
         except (requests.exceptions.HTTPError, BlockingByWebsiteError) as e:
             print(e)
             time.sleep(2.64 * (i + 1))
     raise Exception("Unable to get stocks_balance_sheet")
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
+@pytest.mark.parametrize("stock_type", [x for x in constant.StockType])
 def test_get_this_quarter(stock_type):
     results = _call_get_stocks_balance_sheet(THIS_QUARTER_YEAR, stock_type, THIS_QUARTER)
     assert results == []
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
+@pytest.mark.parametrize("stock_type", [x for x in constant.StockType])
 def test_get_last_quarter(stock_type):
     results = _call_get_stocks_balance_sheet(LAST_QUARTER_YEAR, stock_type, LAST_QUARTER)
     assert isinstance(results, list)
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in constant.StockType])
+@pytest.mark.parametrize("stock_type", [x for x in constant.StockType])
 def test_get_last_last_quarter(stock_type):
     results = _call_get_stocks_balance_sheet(LAST_LAST_QUARTER_YEAR, stock_type, LAST_LAST_QUARTER)
 
