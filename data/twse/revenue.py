@@ -99,7 +99,7 @@ class TwseRevenueParser(DataParser):
         response = self.request()
 
         response.raise_for_status()
-        content = response.content.decode("utf-8-sig").strip("\r\n").split("\r\n")
+        content = response.content.decode("utf-8-sig").splitlines()
 
         data = []
         hearders = None
@@ -107,14 +107,18 @@ class TwseRevenueParser(DataParser):
             reader = csv.reader(content)
         except Exception as e:
             raise WrongDataFormat(f"Unable to parse csv for {self.year=} {self.month=} {self.stock_type=}\n{content}") from e
-        for row in reader:
-            if len(row) != 14:
-                raise WrongDataFormat(f"Expect 14 columns. Got {len(row)}\n{row}")
-            
-            if hearders is None:
-                hearders = row
-                continue
+        
+        try:
+            for row in reader:
+                if len(row) != 14:
+                    raise WrongDataFormat(f"Expect 14 columns. Got {len(row)}\n{row}")
+                
+                if hearders is None:
+                    hearders = row
+                    continue
 
-            data.append({header: value for header, value in zip(hearders, row)})
+                data.append({header: value for header, value in zip(hearders, row)})
+        except csv.Error as e:
+            raise WrongDataFormat(f"Unable to parse csv =====\n{content}\n=====") from e
 
         self._data = data

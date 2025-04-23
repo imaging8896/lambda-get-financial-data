@@ -1,12 +1,10 @@
 import requests
-import time
 import logging
 import random
-import ssl
-import contextlib
+import traceback
 
-from requests.adapters import HTTPAdapter, Retry
 from cloudscraper import CloudScraper
+from curl_cffi import requests as curl_requests
 
 from ..constant import RequestMethod
 
@@ -75,50 +73,50 @@ def request(url: str, method: RequestMethod, mobile: bool = True, desktop: bool 
     
     try:
         response = request_by_cloud_scraper(url, method, mobile=mobile, desktop=desktop, **request_kw)
-    except (requests.exceptions.SSLError, requests.exceptions.ConnectionError):
-        with contextlib.suppress(requests.exceptions.SSLError, requests.exceptions.ConnectionError):
-            response = request_by_cloud_scraper(url, method, mobile=mobile, desktop=desktop, ssl_context=ssl.create_default_context(), **request_kw)
+    except (requests.exceptions.SSLError, requests.exceptions.ConnectionError) as e:
+        traceback.print_exception(e)
 
     if mobile and desktop:
         try:
             if response is None or response.status_code == 403:
                 response = request_by_cloud_scraper(url, method, mobile=False, **request_kw)
-        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError):
-            with contextlib.suppress(requests.exceptions.SSLError, requests.exceptions.ConnectionError):
-                response = request_by_cloud_scraper(url, method, mobile=False, ssl_context=ssl.create_default_context(), **request_kw)
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError) as e:
+            traceback.print_exception(e)
 
         try:
             if response is None or response.status_code == 403:
                 response = request_by_cloud_scraper(url, method, desktop=False, **request_kw)
-        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError):
-            response = request_by_cloud_scraper(url, method, desktop=False, ssl_context=ssl.create_default_context(), **request_kw)
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError) as e:
+            traceback.print_exception(e)
 
     if response is not None:
         return response
     raise RuntimeError("Code should not reach here. Response is None.")
 
 
-def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, ssl_context: ssl.SSLContext = None, **request_kw):
-    if ssl_context is not None:
-        ssl_context.check_hostname = False
-
+def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, **request_kw):
     if not mobile:
         platforms = ['linux', 'windows', 'darwin']
 
-        scraper = CloudScraper(browser={"mobile": False, "platform": random.SystemRandom().choice(platforms)}, ssl_context=ssl_context)
+        scraper = CloudScraper(browser={"mobile": False, "platform": random.SystemRandom().choice(platforms)})
     elif not desktop:
-        scraper = CloudScraper(browser={"dessktop": False, "browser": "chrome"}, ssl_context=ssl_context)
+        scraper = CloudScraper(browser={"dessktop": False, "browser": "chrome"})
     else:
-        scraper = CloudScraper(ssl_context=ssl_context)
+        scraper = CloudScraper()
 
-    scraper.mount(
-        url, 
-        HTTPAdapter(max_retries=Retry(total=5, backoff_factor=2.1)),
-    )
+    headers = {
+        'User-Agent': scraper.headers['User-Agent'], 
+        'Accept': 'application/json, text/plain, */*', 
+        'Accept-Language': 'en-US,en;q=0.9', 
+        # 'Referer': 'https://www.moneydj.com/XQMBondPo/api/Data/GetProdHist',
+        # 'Origin': 'https://www.moneydj.com',
+        'Referer': url.split('?')[0],  # Extract base URL from full URL
+        'Origin': '/'.join(url.split('/')[:3]),  # Extract scheme://hostname from URL
+    }
 
     if method == RequestMethod.POST:
-        return scraper.post(url, verify=ssl_context is None, **request_kw)
+        return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
     elif method == RequestMethod.GET:
-        return scraper.get(url, verify=ssl_context is None, **request_kw)
+        return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
     else:
         raise ValueError(f"Unsupported method {method=}")

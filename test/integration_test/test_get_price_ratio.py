@@ -4,16 +4,17 @@ from datetime import datetime, date
 
 from data import get
 from data.exception import WrongDataFormat
+from data.constant import StockType
 
 
-@pytest.fixture(params=["上市", "上櫃"])
+@pytest.fixture(params=[StockType.PUBLIC, StockType.OTC])
 def price_ratio_stock_type(request):
-    return request.param
+    return request.param.value
 
 
 @pytest.mark.parametrize("query_date, stock_type, expect_price_ratio", [
     (
-        date(year=2009, month=2, day=12), "上市", {
+        date(year=2009, month=2, day=12), StockType.PUBLIC, {
             'year': '2009', 
             'month': '2', 
             'stock_id': '8070', 
@@ -27,7 +28,7 @@ def price_ratio_stock_type(request):
         },
     ),
     (
-        date(year=2017, month=1, day=1), "上市", {
+        date(year=2017, month=1, day=1), StockType.PUBLIC, {
             'year': '2016', 
             'month': '12', 
             'stock_id': '9945', 
@@ -41,7 +42,7 @@ def price_ratio_stock_type(request):
         },
     ),
     (
-        date(year=2025, month=2, day=4), "上市", {
+        date(year=2025, month=2, day=4), StockType.PUBLIC, {
             'year': '2025', 
             'month': '2', 
             'stock_id': '2910', 
@@ -55,7 +56,7 @@ def price_ratio_stock_type(request):
         },
     ),
     (
-        date(year=2009, month=11, day=3), "上櫃", {
+        date(year=2009, month=11, day=3), StockType.OTC, {
             'year': '2009', 
             'month': '11', 
             'stock_id': '3498', 
@@ -69,7 +70,7 @@ def price_ratio_stock_type(request):
         },
     ),
     (
-        date(year=2025, month=1, day=22), "上櫃", {
+        date(year=2025, month=1, day=22), StockType.OTC, {
             'year': '2025', 
             'month': '1', 
             'stock_id': '4416', 
@@ -84,7 +85,7 @@ def price_ratio_stock_type(request):
     ),
 ])
 def test_get_price_ratio(query_date, stock_type, expect_price_ratio):
-    results = get("price_ratio", query_date=query_date.isoformat(), stock_type=stock_type)
+    results = get("price_ratio", query_date=query_date.isoformat(), stock_type=stock_type.value)
 
     expect_stock_id_results = [result for result in results if result["stock_id"] == expect_price_ratio["stock_id"]]
     assert expect_stock_id_results

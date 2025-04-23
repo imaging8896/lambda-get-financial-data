@@ -7,7 +7,7 @@ from data.constant import StockType
 
 
 @pytest.mark.parametrize("year, stock_type, timeout, test_stock_id, expect_dividends", [
-    (2025, "上市", 20, "3443", [
+    (2025, StockType.PUBLIC, 20, "3443", [
         {
             'progress_status': '董事會擬議', 
             'dividend_cal_time_str': '113年年度', 
@@ -36,7 +36,7 @@ from data.constant import StockType
             'year': 2025
         }
     ]),
-    (2024, "興櫃", 100, "6586", [
+    (2024, StockType.ROTC, 100, "6586", [
         {
             'assignable': '-306086468',
             'dividend_board_plan_time': '113/12/12',
@@ -182,7 +182,7 @@ from data.constant import StockType
             'year': 2024
         }
     ]),
-    (2018, "上櫃", 40, "6629", [
+    (2018, StockType.OTC, 40, "6629", [
         {
             'assignable': '105871163',
             'dividend_board_plan_time': '107/06/22',
@@ -208,7 +208,7 @@ from data.constant import StockType
             'year': 2018,
         }
     ]),
-    (2013, "上市", 30, "1102", [
+    (2013, StockType.PUBLIC, 30, "1102", [
         {
             'assignable': '12744001917',
             'dividend_board_plan_time': None,
@@ -237,7 +237,7 @@ from data.constant import StockType
             'year': 2013,
         }
     ]),
-    (2013, "上市", 30, "6168", [
+    (2013, StockType.PUBLIC, 30, "6168", [
         {
             'assignable': '-510314553',
             'dividend_board_plan_time': None,
@@ -278,18 +278,18 @@ from data.constant import StockType
     ]),
 ])
 def test_get_dividend(year, stock_type, timeout, test_stock_id, expect_dividends):
-    results = get("dividend", year=year, stock_type=stock_type, timeout=timeout)[test_stock_id]
+    results = get("dividend", year=year, stock_type=stock_type.value, timeout=timeout)[test_stock_id]
 
     assert results == expect_dividends
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in StockType])
+@pytest.mark.parametrize("stock_type", [x for x in StockType])
 def test_get_latest_dividend(stock_type):
     now = datetime.now()
 
-    assert isinstance(get("dividend", year=now.year, stock_type=stock_type, timeout=20), dict)
+    assert isinstance(get("dividend", year=now.year, stock_type=stock_type.value, timeout=20), dict)
 
 
-@pytest.mark.parametrize("stock_type", [x.value for x in StockType])
+@pytest.mark.parametrize("stock_type", [x for x in StockType])
 def test_get_no_dividend(stock_type):
-    assert {} == get("dividend", year=3000, stock_type=stock_type, timeout=20)
+    assert {} == get("dividend", year=3000, stock_type=stock_type.value, timeout=20)

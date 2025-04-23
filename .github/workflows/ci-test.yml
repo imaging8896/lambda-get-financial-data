@@ -7,7 +7,7 @@ on:
 
 jobs:
   unit-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -20,7 +20,7 @@ jobs:
         python -m pip install tox
     - run: tox
   integration-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python
@@ -31,5 +31,5 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
-        python -m pip install pytest
-    - run: python -m pytest -vv --durations=10 test/integration_test
+        python -m pip install pytest pytest-timeout
+    - run: python -m pytest -vv --durations=10 --timeout=120 test/integration_test
