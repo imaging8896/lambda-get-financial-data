@@ -1,7 +1,8 @@
-import requests
 import time
 import itertools
 import logging
+
+import curl_cffi
 
 from ..parser import DataParser
 from ..parser.html_parser import DataHTMLParser
@@ -42,10 +43,10 @@ class RedirectOldParser(DataParser):
 
         try:
             response_json = response.json()
-        except requests.exceptions.JSONDecodeError:
+        except curl_cffi.requests.exceptions.JSONDecodeError:
             if "THE PAGE CANNOT BE ACCESSED!" in response.text:
                 msg = f"THE PAGE CANNOT BE ACCESSED!\n{response.text}"
-                logger.info(msg)
+                logger.warning(msg)
                 raise BlockingByWebsiteError("THE PAGE CANNOT BE ACCESSED!")
             raise Exception(f"Unable to parse response\n{response.text}")
 
