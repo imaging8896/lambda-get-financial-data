@@ -1,6 +1,7 @@
 import time
 import itertools
 import logging
+import json
 
 import curl_cffi
 
@@ -43,7 +44,7 @@ class RedirectOldParser(DataParser):
 
         try:
             response_json = response.json()
-        except curl_cffi.requests.exceptions.JSONDecodeError:
+        except (curl_cffi.requests.exceptions.JSONDecodeError, json.decoder.JSONDecodeError):
             if "THE PAGE CANNOT BE ACCESSED!" in response.text:
                 msg = f"THE PAGE CANNOT BE ACCESSED!\n{response.text}"
                 logger.warning(msg)
