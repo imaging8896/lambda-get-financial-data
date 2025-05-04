@@ -111,7 +111,7 @@ class TwseRevenueParser(DataParser):
         try:
             for row in reader:
                 if len(row) != 14:
-                    raise WrongDataFormat(f"Expect 14 columns. Got {len(row)}\n{row}")
+                    raise WrongDataFormat(f"Expect 14 columns. Got {len(row)}\n{row}\ncontent\n{content}")
                 
                 if hearders is None:
                     hearders = row
