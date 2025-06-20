@@ -1,7 +1,7 @@
 import requests
 import logging
 import random
-import traceback
+import time
 
 from cloudscraper import CloudScraper
 from curl_cffi import requests as curl_requests
@@ -73,21 +73,21 @@ def request(url: str, method: RequestMethod, mobile: bool = True, desktop: bool 
     
     try:
         response = request_by_cloud_scraper(url, method, mobile=mobile, desktop=desktop, **request_kw)
-    except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError) as e:
-        traceback.print_exception(e)
+    except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError):
+        logger.warning(f"Request error with random client header", exc_info=True)
 
     if mobile and desktop:
         try:
             if response is None or response.status_code == 403:
                 response = request_by_cloud_scraper(url, method, mobile=False, **request_kw)
-        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError) as e:
-            traceback.print_exception(e)
+        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError):
+            logger.warning(f"Request error with desktop client header", exc_info=True)
 
         try:
             if response is None or response.status_code == 403:
                 response = request_by_cloud_scraper(url, method, desktop=False, **request_kw)
-        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError) as e:
-            traceback.print_exception(e)
+        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError):
+            logger.warning(f"Request error with mobile client header", exc_info=True)
 
     if response is not None:
         return response
@@ -114,9 +114,18 @@ def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = Tru
         'Origin': '/'.join(url.split('/')[:3]),  # Extract scheme://hostname from URL
     }
 
-    if method == RequestMethod.POST:
-        return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
-    elif method == RequestMethod.GET:
-        return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
-    else:
-        raise ValueError(f"Unsupported method {method=}")
+    try:
+        if method == RequestMethod.POST:
+            return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
+        elif method == RequestMethod.GET:
+            return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
+    except curl_requests.exceptions.Timeout:
+        time.sleep(10)
+        try:
+            if method == RequestMethod.POST:
+                return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
+            elif method == RequestMethod.GET:
+                return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
+        except Exception as e:
+            raise e from None
+    raise ValueError(f"Unsupported method {method=}")

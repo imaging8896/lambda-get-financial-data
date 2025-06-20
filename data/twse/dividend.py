@@ -281,7 +281,7 @@ def _parse_after_2021(td_texts: list[str]):
         dividend_share_per_share_from_other_accumulation = td_texts[17].replace(",", ""),
         dividend_share_total = "0" if td_texts[18] == "" else td_texts[18].replace(",", ""),
 
-        note = None if td_texts[19] in {"無", "", "無。"} else td_texts[19],
+        note = None if td_texts[19] in {"無", "", "無。"} else td_texts[19].replace("\r", ""),
     )._asdict()
 
 
