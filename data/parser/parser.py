@@ -1,7 +1,7 @@
 import requests
 import logging
 import random
-import traceback
+import time
 
 from cloudscraper import CloudScraper
 from curl_cffi import requests as curl_requests
@@ -114,9 +114,18 @@ def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = Tru
         'Origin': '/'.join(url.split('/')[:3]),  # Extract scheme://hostname from URL
     }
 
-    if method == RequestMethod.POST:
-        return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
-    elif method == RequestMethod.GET:
-        return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
-    else:
-        raise ValueError(f"Unsupported method {method=}")
+    try:
+        if method == RequestMethod.POST:
+            return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
+        elif method == RequestMethod.GET:
+            return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
+    except curl_requests.exceptions.Timeout:
+        time.sleep(10)
+        try:
+            if method == RequestMethod.POST:
+                return curl_requests.post(url, headers=headers, impersonate="chrome110", **request_kw)
+            elif method == RequestMethod.GET:
+                return curl_requests.get(url, headers=headers, impersonate="chrome110", **request_kw)
+        except Exception as e:
+            raise e from None
+    raise ValueError(f"Unsupported method {method=}")
