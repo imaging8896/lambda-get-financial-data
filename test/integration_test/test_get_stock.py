@@ -31,4 +31,7 @@ def test_get_stock(stock_type, expect_stocks):
     assert results is not None, "Failed to get stock data"
 
     for expect_stock in expect_stocks:
-        assert expect_stock in results
+        actual_stocks = [x for x in results if x['id'] == expect_stock['id']]
+        assert len(actual_stocks) == 1, f"Expected one stock with id {expect_stock['id']}, found {len(actual_stocks)}"
+        
+        assert expect_stock["name"] == actual_stocks[0]["name"], f"Expected stock data does not match actual data for id {expect_stock['id']}"
