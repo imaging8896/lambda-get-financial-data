@@ -1,7 +1,8 @@
-import requests
 import logging
 import random
 import time
+
+from typing import Sequence
 
 from cloudscraper import CloudScraper
 from curl_cffi import requests as curl_requests
@@ -18,7 +19,7 @@ class DataParser:
         request_method: RequestMethod,
         request_cloud_scraper_mobile: bool, 
         request_cloud_scraper_desktop: bool,
-        expected_status_codes: list[int] = frozenset([200]),
+        expected_status_codes: Sequence[int] = [200],
     ) -> None:
         self.request_method = request_method
         self.request_cloud_scraper_mobile = request_cloud_scraper_mobile
@@ -39,10 +40,10 @@ class DataParser:
         raise NotImplementedError
 
     @property
-    def data(self) -> dict:
+    def data(self):
         raise NotImplementedError
     
-    def request(self) -> requests.Response:
+    def request(self) -> curl_requests.Response:
         request_method = self.request_method
         request_url = self.request_url
         request_kw = self.request_kw
@@ -61,7 +62,7 @@ class DataParser:
             **request_kw,
         )
         if response.status_code not in expected_status_codes:
-            raise requests.exceptions.HTTPError(f"Unexpected status code: {response.status_code}\n{response.text}")
+            raise curl_requests.exceptions.HTTPError(f"Unexpected status code: {response.status_code}\n{response.text}")
         return response
 
     def parse_response(self) -> None:

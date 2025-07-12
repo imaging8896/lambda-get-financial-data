@@ -1,6 +1,7 @@
 import logging
 import json
 
+from .moneydj import etf_slice
 from .moneydj import tw_2y_index
 from .parser import DataParser
 from .twse import dividend
@@ -19,6 +20,7 @@ def get(data_type: str, mobile: bool = True, desktop: bool = True, **kw):
 
     parser: DataParser = {
         "dividend": dividend.TwseDividendHTMLParser,
+        "etf_slice": etf_slice.MoneydjETFSliceParser,
         "price_ratio": price_ratio.parser,
         "revenue": revenue.TwseRevenueParser,
         "stock": stock.TwseStockParser,

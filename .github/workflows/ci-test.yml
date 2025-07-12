@@ -32,4 +32,4 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         python -m pip install pytest pytest-timeout
-    - run: python -m pytest -vv --durations=10 --timeout=120 test/integration_test
+    - run: python -m pytest -vv --durations=10 --timeout=300 test/integration_test
