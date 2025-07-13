@@ -1,8 +1,7 @@
 
 import logging
 
-from .constant import ETF_Country
-from ..constant import RequestMethod
+from ..constant import RequestMethod, ETF_Country
 from ..exception import WrongDataFormat
 from ..parser.html_parser import DataHTMLParser
 

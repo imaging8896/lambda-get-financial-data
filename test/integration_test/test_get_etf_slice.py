@@ -1,7 +1,7 @@
 import pytest
 
 from data import get
-from data.moneydj.constant import ETF_Country
+from data.constant import ETF_Country
 
 
 @pytest.mark.parametrize("etf_id, etf_country, expect_slice_infos", [
