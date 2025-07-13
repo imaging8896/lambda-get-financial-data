@@ -23,14 +23,14 @@ class MoneydjTWIndex2YPriceParser(DataParser):
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
 
-        self._data: list[dict] = None
+        self._data: list[dict] = []
 
     @property
     def request_url(self):
         return "https://www.moneydj.com/funddj/bcd/CZKC0.djbcd?a=EB09999&b=D"
 
     @property
-    def data(self) -> dict:
+    def data(self):
         return self._data
 
     def parse_response(self) -> None:
