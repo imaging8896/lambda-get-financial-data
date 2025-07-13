@@ -71,27 +71,34 @@ class DataParser:
 
 def request(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, **request_kw):
     response = None
+    exception = None
     
     try:
         response = request_by_cloud_scraper(url, method, mobile=mobile, desktop=desktop, **request_kw)
-    except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError):
+    except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError) as e:
         logger.warning(f"Request error with random client header", exc_info=True)
+        exception = e
 
     if mobile and desktop:
         try:
             if response is None or response.status_code == 403:
                 response = request_by_cloud_scraper(url, method, mobile=False, **request_kw)
-        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError):
+        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError) as e:
             logger.warning(f"Request error with desktop client header", exc_info=True)
+            exception = e
 
         try:
             if response is None or response.status_code == 403:
                 response = request_by_cloud_scraper(url, method, desktop=False, **request_kw)
-        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError):
+        except (curl_requests.exceptions.SSLError, curl_requests.exceptions.ConnectionError) as e:
             logger.warning(f"Request error with mobile client header", exc_info=True)
+            exception = e
 
     if response is not None:
         return response
+    
+    if exception is not None:
+        raise exception from None
     raise RuntimeError("Code should not reach here. Response is None.")
 
 
