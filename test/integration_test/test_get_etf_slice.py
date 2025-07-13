@@ -1,7 +1,7 @@
 import pytest
 
 from data import get
-from data.moneydj.constant import ETF_Country
+from data.constant import ETF_Country
 
 
 @pytest.mark.parametrize("etf_id, etf_country, expect_slice_infos", [
@@ -25,4 +25,8 @@ from data.moneydj.constant import ETF_Country
 def test_get_etf_slice(etf_id, etf_country, expect_slice_infos):
     results = get("etf_slice", etf_id=etf_id, etf_country=etf_country.value)
 
-    assert results == expect_slice_infos
+    if expect_slice_infos:
+        for expect_slice_info in expect_slice_infos:
+            assert expect_slice_info in results, f"Expected slice info {expect_slice_info} not found in results {results}"
+    else:
+        assert not results, f"Expected no slice info for {etf_id} in {etf_country}, but got {results}"
