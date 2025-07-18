@@ -95,6 +95,10 @@ class PocketETFDividendParser(DataParser):
                     logger.error(msg)
                     raise WrongDataFormat(msg)
                 
+                if data[1].strip() == "":
+                    # No dividend for this year/quarter
+                    continue
+                
                 dividend_year, dividend_quarter = _parse_dividend_year_quarter(data[0])
                 yield ETFDividend(
                     dividend_year=dividend_year,
