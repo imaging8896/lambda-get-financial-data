@@ -9,7 +9,6 @@ from data.constant import ETF_Country
     ("00632R", ETF_Country.TW, 20, []),
     ("00646", ETF_Country.TW, 20, []),
     ("0050", ETF_Country.TW, 20, [
-        {'dividend_year': 2025, 'dividend_quarter': 2, 'dividend_value': '0.36', 'dividend_return_rate': '0.73', 'dividend_date': '2025-07-21'}, 
         {'dividend_year': 2024, 'dividend_quarter': 4, 'dividend_value': '2.7', 'dividend_return_rate': '1.36', 'dividend_date': '2025-01-17'}, 
         {'dividend_year': 2024, 'dividend_quarter': 2, 'dividend_value': '1', 'dividend_return_rate': '0.51', 'dividend_date': '2024-07-16'}
     ]),
