@@ -3,7 +3,7 @@ import pytest
 from datetime import datetime, date
 
 from data import get
-from data.exception import WebsiteMaintaince
+from data.exception import WebsiteMaintaince, WrongDataFormat
 from data.constant import StockType
 
 
@@ -102,7 +102,11 @@ def test_get_latest_price_ratio(price_ratio_stock_type):
 
 
 def test_get_no_price_ratio_error(price_ratio_stock_type):
-    with pytest.raises(WebsiteMaintaince):
+    expect_error = {
+        StockType.PUBLIC: WebsiteMaintaince,
+        StockType.OTC: WrongDataFormat,
+    }[price_ratio_stock_type]
+    with pytest.raises(expect_error):
         get("price_ratio", query_date=date(year=3000, month=2, day=12).isoformat(), stock_type=price_ratio_stock_type)
 
 
