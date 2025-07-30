@@ -11,7 +11,7 @@ from data.exception import BlockingByWebsiteError
 NOW = datetime.now()
 
 THIS_QUARTER_YEAR = NOW.year
-THIS_QUARTER = NOW.month // 4 + 1
+THIS_QUARTER = (NOW.month - 1) // 3 + 1
 
 if THIS_QUARTER == 1:
     LAST_QUARTER_YEAR = THIS_QUARTER_YEAR - 1
