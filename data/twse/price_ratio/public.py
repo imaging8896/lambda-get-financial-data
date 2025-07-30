@@ -45,7 +45,7 @@ class TwsePublicPriceRatioParser(DataParser):
 
         self._working_date = None
         self._last_working_date_generator = last_working_date_generator(query_date)
-        self._data: list[dict] = None
+        self._data: list[dict] | None = None
 
     @property
     def request_url(self):
@@ -138,6 +138,9 @@ class TwsePublicPriceRatioParser(DataParser):
 
             elif data.get("stat") == "很抱歉，沒有符合條件的資料!":
                 pass
+            elif data.get("stat") == "查詢日期大於今日，請重新查詢!":
+                msg = f"Weird response, query date {self._working_date} is greater than today. Please check the date. Got\n{data}"
+                raise WebsiteMaintaince(msg)
             else:
                 raise WrongDataFormat(f"Invalid value for 'stat' key or no 'stat' key for {response.url}. Got\n{data}")
             
