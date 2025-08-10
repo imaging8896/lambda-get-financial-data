@@ -103,8 +103,8 @@ def test_get_latest_price_ratio(price_ratio_stock_type):
 
 def test_get_no_price_ratio_error(price_ratio_stock_type):
     expect_error = {
-        StockType.PUBLIC: WebsiteMaintaince,
-        StockType.OTC: WrongDataFormat,
+        StockType.PUBLIC.value: WebsiteMaintaince,
+        StockType.OTC.value: WrongDataFormat,
     }[price_ratio_stock_type]
     with pytest.raises(expect_error):
         get("price_ratio", query_date=date(year=3000, month=2, day=12).isoformat(), stock_type=price_ratio_stock_type)

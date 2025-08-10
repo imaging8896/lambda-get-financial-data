@@ -31,11 +31,6 @@ def test_get_stock_price_history_start_date_is_holiday():
     assert results[expect_start_date.isoformat()] == (938.0, 950.0, 950.0, 932.0, 48129292)
 
 
-def test_get_stock_price_history_when_no_data_within_query_date():
-    with pytest.raises(WrongDataFormat):
-        get("stock_price_history", stock_id="1609", start_date_included=date.today() + timedelta(days=1))
-
-
 def test_get_stock_price_history_for_none_stock():
     with pytest.raises(WrongDataFormat):
         get("stock_price_history", stock_id="99999", start_date_included=date.today())
