@@ -1,6 +1,7 @@
 import logging
 import json
 
+from .cnyes import stock_price_history
 from .moneydj import etf_slice
 from .moneydj import tw_2y_index
 from .parser import DataParser
@@ -20,6 +21,7 @@ def get(data_type: str, mobile: bool = True, desktop: bool = True, **kw):
     logger.info(f"Request {data_type=} {mobile=} {desktop=} {kw=}")
 
     parser: DataParser = {
+        "stock_price_history": stock_price_history.CnyesStockPriceHistoryParser,
         "etf_slice": etf_slice.MoneydjETFSliceParser,
         "tw_2y_index": tw_2y_index.MoneydjTWIndex2YPriceParser,
         "etf_dividend": etf_dividend.PocketETFDividendParser,
