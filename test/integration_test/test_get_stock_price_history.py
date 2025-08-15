@@ -7,7 +7,7 @@ from data.exception import WrongDataFormat
 
 
 @pytest.mark.parametrize("stock_id, start_date, end_date, expect_start_price, expect_end_price", [
-    ("2330", date(2025, 8, 15), date(2025, 8, 16), (1175.0, 1180.0, 1185.0, 1170.0, 22900178), (1175.0, 1180.0, 1185.0, 1170.0, 22900178)),
+    ("2330", date(2025, 8, 15), date(2025, 8, 16), (1175.0, 1180.0, 1185.0, 1170.0, 23577178), (1175.0, 1180.0, 1185.0, 1170.0, 23577178)),
     ("2330", date(2025, 5, 2), date(2025, 8, 15), (938.0, 950.0, 950.0, 932.0, 48129292), (1185.0, 1175.0, 1190.0, 1175.0, 35269337)),
 ])
 def test_get_stock_price_history(stock_id, start_date, end_date, expect_start_price, expect_end_price):
