@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class TwseDividendHTMLParser(DataHTMLParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, year: str, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, year: str, timeout: str = "180") -> None:
         super().__init__(
             request_method=RequestMethod.GET,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
@@ -23,7 +23,7 @@ class TwseDividendHTMLParser(DataHTMLParser):
 
         self.stock_type = StockType(stock_type)
         self.year = int(year)
-        self.timeout = int(timeout) if timeout else 20
+        self.timeout = int(timeout)
 
         self._finished = False
 
@@ -35,12 +35,12 @@ class TwseDividendHTMLParser(DataHTMLParser):
         self._stack = []
         self._data_groups = []
         self._data = []
-        self._cur_row = None
+        self._cur_row = []
 
-        if year > 2020:
+        if self.year > 2020:
             self.expect_header1 = ('公司代號', '決議（擬議）進度', '股利所屬', '股利所屬', '期別', '董事會決議', '股東會', '期初未分配', '本期淨利', '可分配', '分配後期末未', '股東配發內容', '摘錄公司章程-', '備註')
             self.expect_header2 = ('盈餘分配', '法定盈餘', '資本公積', '股東配發', '盈餘轉', '法定盈餘', '資本公積', '股東配股')
-        elif year > 2016:
+        elif self.year > 2016:
             self.expect_header1 = ('公司代號', '決議（擬議）進度', '股利所屬', '股利所屬', '期別', '董事會決議', '股東會', '期初未分配', '本期淨利', '可分配', '分配後期末未', '股東配發內容', '摘錄公司章程-', '備註')
             self.expect_header2 = ('盈餘分配', '法定盈餘', '股東配發', '盈餘轉', '法定盈餘', '股東配股')
         else:
@@ -102,6 +102,8 @@ class TwseDividendHTMLParser(DataHTMLParser):
                 matched = re.match(r"^(\d+.*) - (.+)$", row_data[0])
                 if not matched:
                     logger.error(f"Unexpected stock id and name\n{row_data}", exc_info=True)
+                    continue
+
                 stock_id, stock_name = matched.groups()
 
                 if stock_name == "測試帳號":
@@ -143,7 +145,7 @@ class TwseDividendHTMLParser(DataHTMLParser):
                 self._entering_data_table = True
             
             if tag == "tr" and self._entering_data_table:
-                self._cur_row = []
+                self._cur_row.clear()
 
             if tag == "td" and self._entering_data_table:
                 self._cur_row.append("")
