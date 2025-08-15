@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class CnyesStockPriceHistoryParser(DataParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_id: str, start_date_included: date, end_date_excluded: date | None = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_id: str, start_date_included: str, end_date_excluded: str | None = None) -> None:
         super().__init__(
             request_method=RequestMethod.GET,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
@@ -24,15 +24,15 @@ class CnyesStockPriceHistoryParser(DataParser):
         )
 
         self.stock_id = stock_id
-        self.start_date_included = start_date_included
-        self.end_date_excluded = date.today() if end_date_excluded is None else end_date_excluded
+        self.start_date_included = date.fromisoformat(start_date_included)
+        self.end_date_excluded = date.today() if end_date_excluded is None else date.fromisoformat(end_date_excluded)
 
         self._data: dict[str, tuple] | None = None
 
     @property
     def request_url(self):
-        from_timestamp = datetime(year=self.start_date_included.year, month=self.start_date_included.month, day=self.start_date_included.day, hour=12).timestamp()
-        to_timestamp = datetime(year=self.end_date_excluded.year, month=self.end_date_excluded.month, day=self.end_date_excluded.day).timestamp()
+        from_timestamp = datetime(year=self.start_date_included.year, month=self.start_date_included.month, day=self.start_date_included.day, hour=9).timestamp()
+        to_timestamp = datetime(year=self.end_date_excluded.year, month=self.end_date_excluded.month, day=self.end_date_excluded.day, hour=18).timestamp()
         return f"https://ws.api.cnyes.com/ws/api/v1/charting/history?resolution=D&symbol=TWS:{self.stock_id}:STOCK&from={int(to_timestamp)}&to={int(from_timestamp)}"
 
     @property
