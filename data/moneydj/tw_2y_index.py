@@ -69,17 +69,26 @@ class MoneydjTWIndex2YPriceParser(DataParser):
             raise WrongDataFormat(f"Volumes length not equal to dates length for {response.url}")
         
         margin_financing_balances_str, response_text = response_text.split(" ", 1)
-        margin_financing_balances = [margin_financing_balance + "000000" for margin_financing_balance in margin_financing_balances_str.split(",")]
+        margin_financing_balances: list[str | None] = [margin_financing_balance + "000000" for margin_financing_balance in margin_financing_balances_str.split(",")]
+        if len(margin_financing_balances) == len(dates) - 1:
+            margin_financing_balances.append(None) # Not yet available for the moment
+
         if len(margin_financing_balances) != len(dates):
             raise WrongDataFormat(f"Margin financing balances length not equal to dates length for {response.url}")
         
         short_selling_amounts_str, response_text = response_text.split(" ", 1)
-        short_selling_amounts = [short_selling_amount + "000" for short_selling_amount in short_selling_amounts_str.split(",")]
+        short_selling_amounts: list[str | None] = [short_selling_amount + "000" for short_selling_amount in short_selling_amounts_str.split(",")]
+        if len(short_selling_amounts) == len(dates) - 1:
+            short_selling_amounts.append(None) # Not yet available for the moment
+
         if len(short_selling_amounts) != len(dates):
             raise WrongDataFormat(f"Short selling amounts length not equal to dates length for {response.url}")
         
         day_trading_amounts_str = response_text
-        day_trading_amounts = [day_trading_amount + "000" for day_trading_amount in day_trading_amounts_str.split(",")]
+        day_trading_amounts: list[str | None] = [day_trading_amount + "000" for day_trading_amount in day_trading_amounts_str.split(",")]
+        if len(day_trading_amounts) == len(dates) - 1:
+            day_trading_amounts.append(None) # Not yet available for the moment
+
         if len(day_trading_amounts) != len(dates):
             raise WrongDataFormat(f"Day trading amounts length not equal to dates length for {response.url}")
 
