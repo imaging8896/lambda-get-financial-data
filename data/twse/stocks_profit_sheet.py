@@ -9,7 +9,7 @@ from ..constant import StockType, RequestMethod
 
 
 class TwseStocksProfitSheetParser(RedirectOldParser):
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, year: int, stock_type: str, quarter: int, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, year: int, stock_type: str, quarter: int, timeout: str | None = None) -> None:
         super().__init__(
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
@@ -18,7 +18,7 @@ class TwseStocksProfitSheetParser(RedirectOldParser):
         self.year = year
         self.stock_type = StockType(stock_type)
         self.quarter = quarter
-        self.timeout = int(timeout) if timeout else 20
+        self.timeout = timeout if timeout else "20"
 
     @property
     def request_kw(self) -> dict:
@@ -40,7 +40,8 @@ class TwseStocksProfitSheetParser(RedirectOldParser):
                     "isQuery": "Y",
                 }
             },
-            "timeout": self.timeout,
+            "timeout": int(self.timeout),
+            "impersonate": "chrome110",
         }
     
     def get_internal_parser(self, url: str) -> DataParser:
@@ -49,7 +50,7 @@ class TwseStocksProfitSheetParser(RedirectOldParser):
 
 class _TwseStocksProfitSheetHTMLParser(TwseHTMLTableParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, url: str, year: int, quarter: int, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, url: str, year: int, quarter: int, timeout: str | None = None) -> None:
         super().__init__(
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
@@ -63,7 +64,14 @@ class _TwseStocksProfitSheetHTMLParser(TwseHTMLTableParser):
         self.quarter = quarter
 
     @property
-    def data(self) -> dict:
+    def request_kw(self) -> dict:
+        return {
+            "timeout": self.timeout,
+            "impersonate": "chrome110",
+        }
+
+    @property
+    def data(self):
         return [_to_data(raw_data, self.year, self.quarter) for raw_data in self._data]
 
 
