@@ -32,6 +32,8 @@ class RedirectOldParser(DataParser):
     
     @property
     def data(self) -> dict:
+        if self.internal_parser is None:
+            raise ValueError("Internal parser is not set")
         return self.internal_parser.data
     
     def get_internal_parser(self, url: str) -> DataParser:
@@ -63,7 +65,7 @@ class RedirectOldParser(DataParser):
 
 class TwseHTMLTableParser(DataHTMLParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, request_method: RequestMethod, url: str, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, request_method: RequestMethod, url: str, timeout: str | None = None) -> None:
         super().__init__(
             request_method=request_method,
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,

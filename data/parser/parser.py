@@ -102,7 +102,9 @@ def request(url: str, method: RequestMethod, mobile: bool = True, desktop: bool 
     raise RuntimeError("Code should not reach here. Response is None.")
 
 
-def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, **request_kw):
+def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = True, desktop: bool = True, impersonate="chrome", **request_kw):
+    request_kw["impersonate"] = impersonate
+
     if not mobile:
         platforms = ['linux', 'windows', 'darwin']
 
@@ -124,16 +126,16 @@ def request_by_cloud_scraper(url: str, method: RequestMethod, mobile: bool = Tru
 
     try:
         if method == RequestMethod.POST:
-            return curl_requests.post(url, headers=headers, impersonate="chrome", **request_kw)
+            return curl_requests.post(url, headers=headers, **request_kw)
         elif method == RequestMethod.GET:
-            return curl_requests.get(url, headers=headers, impersonate="chrome", **request_kw)
+            return curl_requests.get(url, headers=headers, **request_kw)
     except curl_requests.exceptions.Timeout:
         time.sleep(10)
         try:
             if method == RequestMethod.POST:
-                return curl_requests.post(url, headers=headers, impersonate="chrome", **request_kw)
+                return curl_requests.post(url, headers=headers, **request_kw)
             elif method == RequestMethod.GET:
-                return curl_requests.get(url, headers=headers, impersonate="chrome", **request_kw)
+                return curl_requests.get(url, headers=headers, **request_kw)
         except Exception as e:
             raise e from None
     raise ValueError(f"Unsupported method {method=}")
