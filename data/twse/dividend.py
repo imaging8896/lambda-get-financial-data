@@ -145,7 +145,7 @@ class TwseDividendHTMLParser(DataHTMLParser):
                 self._entering_data_table = True
             
             if tag == "tr" and self._entering_data_table:
-                self._cur_row.clear()
+                self._cur_row = []
 
             if tag == "td" and self._entering_data_table:
                 self._cur_row.append("")
