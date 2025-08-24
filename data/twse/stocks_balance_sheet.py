@@ -67,7 +67,6 @@ class _TwseStocksBalanceSheetHTMLParser(TwseHTMLTableParser):
     def request_kw(self) -> dict:
         return {
             "timeout": self.timeout,
-            "impersonate": "chrome110",
         }
 
     @property
