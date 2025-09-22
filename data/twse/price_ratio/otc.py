@@ -25,11 +25,12 @@ class TwseOTCPriceRatioParser(DataParser):
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
-        query_date = date.fromisoformat(query_date)
+        the_query_date = date.fromisoformat(query_date)
+        self.requested_date = the_query_date
 
-        self._working_date = None
-        self._last_working_date_generator = last_working_date_generator(query_date)
-        self._data: list[dict] = None
+        self._last_working_date_generator = last_working_date_generator(the_query_date)
+        self._working_date = the_query_date
+        self._data: list[dict] = []
 
     @property
     def request_url(self):
@@ -37,7 +38,7 @@ class TwseOTCPriceRatioParser(DataParser):
         return f"https://www.tpex.org.tw/www/zh-tw/afterTrading/peQryDate?date={self._working_date.year}/{self._working_date.month:02}/{self._working_date.day:02}&cate=&id=&response=json"
 
     @property
-    def data(self) -> dict:
+    def data(self):
         def _create_data(row: dict):
             for should_have_field in ["股票代號", "殖利率(%)", "股利年度", "本益比", "股價淨值比"]:
                 if should_have_field not in row:
@@ -80,7 +81,8 @@ class TwseOTCPriceRatioParser(DataParser):
         return [_create_data(row) for row in self._data]
 
     def parse_response(self) -> None:
-        while True:
+        iterate_days = 14
+        for _ in range(iterate_days):
             response = self.request()
 
             try:
@@ -99,7 +101,7 @@ class TwseOTCPriceRatioParser(DataParser):
             fields = table_item.get("fields")
             if fields is None:
                 raise WrongDataFormat(f"No 'fields' key for {response.url}. Got\n{table_item}")
-            logger.info(f"Fields {fields}")
+            logger.warning(f"Fields {fields}")
 
             if "data" not in table_item:
                 raise WrongDataFormat(f"No 'data' key for in table item for {response.url}. Got\n{data}")
@@ -117,4 +119,6 @@ class TwseOTCPriceRatioParser(DataParser):
                     for row_data in data
                 ]
                 return
-            time.sleep(1.02)
+            logger.warning(f"No data for {self._working_date.isoformat()}, try previous working date")
+            time.sleep(1.12)
+        raise WrongDataFormat(f"No data found for {iterate_days} consecutive working days before {self.requested_date.isoformat()}")
