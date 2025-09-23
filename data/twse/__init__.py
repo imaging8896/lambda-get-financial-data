@@ -76,13 +76,14 @@ class TwseHTMLTableParser(DataHTMLParser):
         self.timeout = int(timeout) if timeout else 20
 
         self._table_index = 0
-        self._td_row = []
-        self._th_row = []
-        self._current_th_value = None
+        self._td_row: list[str] = []
+        self._th_row: list[str] = []
 
         self._row_header = None
-        self._rows = []
+        self._rows: list[list[str]] = []
         self._data = []
+        
+        self._is_th_no_data = True
 
         # self._is_no_data = False
 
@@ -108,9 +109,6 @@ class TwseHTMLTableParser(DataHTMLParser):
             if tag == "table":
                 self._table_index += 1
 
-        if self._stack and self._stack[-1] == "th":
-            self._current_th_value = ""
-
     def handle_endtag(self, tag):
         if tag not in self._stack and tag == "td": # OTC 2024 4
             logger.warning(f"Tag {tag} not in stack {self._stack}")
@@ -120,8 +118,9 @@ class TwseHTMLTableParser(DataHTMLParser):
 
         if self._table_index >= 2:
             if tag == "th":
-                self._th_row.append(self._current_th_value)
-                self._current_th_value = None
+                if self._is_th_no_data:
+                    self._th_row.append("")  # For empty th
+                self._is_th_no_data = True
             if tag == "tr":
                 if self._th_row:
                     if self._row_header is not None:
@@ -154,7 +153,8 @@ class TwseHTMLTableParser(DataHTMLParser):
     def handle_data(self, data):
         if self._table_index >= 2:
             if self.is_in_tag("th"):
-                self._current_th_value = data.strip().strip("\xa0")
+                self._is_th_no_data = False
+                self._th_row.append(data.strip().strip("\xa0"))
 
             if self.is_in_tag("td") or self.is_in_tags(["td", "a"]):
                 self._td_row.append(data.strip().strip("\xa0"))

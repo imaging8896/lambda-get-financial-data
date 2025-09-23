@@ -14,14 +14,14 @@ logger = logging.getLogger(__name__)
 
 
 class TwseStockParser(RedirectOldParser):
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: str, timeout: str | None = None) -> None:
         super().__init__(
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
 
         self.stock_type = StockType(stock_type)
-        self.timeout = int(timeout) if timeout else 20
+        self.timeout = timeout if timeout else "20"
 
     @property
     def request_kw(self) -> dict:
@@ -41,7 +41,7 @@ class TwseStockParser(RedirectOldParser):
                     "id": ""
                 }
             },
-            "timeout": self.timeout,
+            "timeout": int(self.timeout),
         }
     
     def get_internal_parser(self, url: str) -> DataParser:
@@ -66,7 +66,7 @@ class DividendAssignDecideLevel(enum.Enum):
 
 class _TwseStockHTMLParser(TwseHTMLTableParser):
 
-    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, url: str, timeout: str = None) -> None:
+    def __init__(self, request_cloud_scraper_mobile: bool, request_cloud_scraper_desktop: bool, stock_type: StockType, url: str, timeout: str | None = None) -> None:
         super().__init__(
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
@@ -78,7 +78,7 @@ class _TwseStockHTMLParser(TwseHTMLTableParser):
         self.stock_type = stock_type
 
     @property
-    def data(self) -> dict:
+    def data(self):
         self._data = [
             {
                 key: None if value == "－" else value

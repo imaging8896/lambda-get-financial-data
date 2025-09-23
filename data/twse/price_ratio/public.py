@@ -41,11 +41,12 @@ class TwsePublicPriceRatioParser(DataParser):
             request_cloud_scraper_mobile=request_cloud_scraper_mobile,
             request_cloud_scraper_desktop=request_cloud_scraper_desktop,
         )
-        query_date = date.fromisoformat(query_date)
+        the_query_date = date.fromisoformat(query_date)
+        self.requested_date = the_query_date
 
-        self._working_date = None
-        self._last_working_date_generator = last_working_date_generator(query_date)
-        self._data: list[dict] | None = None
+        self._last_working_date_generator = last_working_date_generator(the_query_date)
+        self._working_date = the_query_date
+        self._data: list[dict] = []
 
     @property
     def request_url(self):
@@ -54,7 +55,7 @@ class TwsePublicPriceRatioParser(DataParser):
         return f"https://www.twse.com.tw/exchangeReport/BWIBBU_d?response=json&date={self._working_date.year}{self._working_date.month:02}{self._working_date.day:02}&selectType=ALL&_={cur_timestamp}"
 
     @property
-    def data(self) -> dict:
+    def data(self):
         def _create_data(row: dict):
             for should_have_field in ["證券代號", "殖利率(%)", "本益比", "股價淨值比"]:
                 if should_have_field not in row:
@@ -97,7 +98,8 @@ class TwsePublicPriceRatioParser(DataParser):
         return [_create_data(row) for row in self._data]
 
     def parse_response(self) -> None:
-        while True:
+        iterate_days = 14
+        for _ in range(iterate_days):
             response = self.request()
             if response.status_code == 404:
                 raise WebsiteMaintaince(f"Maybe maintaince try again later for {response.url}")
@@ -121,7 +123,7 @@ class TwsePublicPriceRatioParser(DataParser):
                 fields = data.get("fields")
                 if fields is None:
                     raise WrongDataFormat(f"No 'fields' key for {response.url}. Got\n{data}")
-                logger.info(f"Fields {fields}")
+                logger.warning(f"Fields {fields}")
 
                 for row in raw_data:
                     if len(row) != len(fields):
@@ -144,4 +146,6 @@ class TwsePublicPriceRatioParser(DataParser):
             else:
                 raise WrongDataFormat(f"Invalid value for 'stat' key or no 'stat' key for {response.url}. Got\n{data}")
             
+            logger.warning(f"No data for {self._working_date.isoformat()}, try previous working date")
             time.sleep(1.32)
+        raise WrongDataFormat(f"No data found for {iterate_days} consecutive working days before {self.requested_date.isoformat()}")
