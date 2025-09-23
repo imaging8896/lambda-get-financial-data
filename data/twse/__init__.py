@@ -82,6 +82,8 @@ class TwseHTMLTableParser(DataHTMLParser):
         self._row_header = None
         self._rows: list[list[str]] = []
         self._data = []
+        
+        self._is_th_no_data = True
 
         # self._is_no_data = False
 
@@ -115,6 +117,10 @@ class TwseHTMLTableParser(DataHTMLParser):
         super().handle_endtag(tag)
 
         if self._table_index >= 2:
+            if tag == "th":
+                if self._is_th_no_data:
+                    self._th_row.append("")  # For empty th
+                self._is_th_no_data = True
             if tag == "tr":
                 if self._th_row:
                     if self._row_header is not None:
@@ -147,6 +153,7 @@ class TwseHTMLTableParser(DataHTMLParser):
     def handle_data(self, data):
         if self._table_index >= 2:
             if self.is_in_tag("th"):
+                self._is_th_no_data = False
                 self._th_row.append(data.strip().strip("\xa0"))
 
             if self.is_in_tag("td") or self.is_in_tags(["td", "a"]):
