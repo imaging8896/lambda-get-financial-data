@@ -7,7 +7,7 @@ from data.constant import StockType
 
 
 @pytest.mark.parametrize("year, stock_type, timeout, test_stock_id, expect_dividends", [
-    (2025, StockType.PUBLIC, 20, "3443", [
+    (2025, StockType.PUBLIC, 60, "3443", [
         {
             'progress_status': '股東會確認', 
             'dividend_cal_time_str': '113年年度', 
@@ -182,7 +182,7 @@ from data.constant import StockType
             'year': 2024
         }
     ]),
-    (2018, StockType.OTC, 40, "6629", [
+    (2018, StockType.OTC, 60, "6629", [
         {
             'assignable': '105871163',
             'dividend_board_plan_time': '107/06/22',
@@ -208,7 +208,7 @@ from data.constant import StockType
             'year': 2018,
         }
     ]),
-    (2013, StockType.PUBLIC, 30, "1102", [
+    (2013, StockType.PUBLIC, 60, "1102", [
         {
             'assignable': '12744001917',
             'dividend_board_plan_time': None,
@@ -237,7 +237,7 @@ from data.constant import StockType
             'year': 2013,
         }
     ]),
-    (2013, StockType.PUBLIC, 30, "6168", [
+    (2013, StockType.PUBLIC, 60, "6168", [
         {
             'assignable': '-510314553',
             'dividend_board_plan_time': None,

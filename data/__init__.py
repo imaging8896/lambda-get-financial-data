@@ -6,6 +6,7 @@ from .moneydj import etf_slice
 from .moneydj import tw_2y_index
 from .parser import DataParser
 from .pocket import etf_dividend
+from .twse import dividend_announcement
 from .twse import dividend
 from .twse import price_ratio
 from .twse import revenue
@@ -25,6 +26,7 @@ def get(data_type: str, mobile: bool = True, desktop: bool = True, **kw):
         "etf_slice": etf_slice.MoneydjETFSliceParser,
         "tw_2y_index": tw_2y_index.MoneydjTWIndex2YPriceParser,
         "etf_dividend": etf_dividend.PocketETFDividendParser,
+        "dividend_announcement": dividend_announcement.TwseDividendAnnouncementParser,
         "dividend": dividend.TwseDividendHTMLParser,
         "price_ratio": price_ratio.parser,
         "revenue": revenue.TwseRevenueParser,
