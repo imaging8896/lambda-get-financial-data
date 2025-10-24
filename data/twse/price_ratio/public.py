@@ -52,6 +52,7 @@ class TwsePublicPriceRatioParser(DataParser):
     def request_url(self):
         self._working_date = next(self._last_working_date_generator)
         cur_timestamp = int((time.time() - 1000) * 1000) # Minus 1000 to avoid querying time greater than current time
+        logger.warning(f"Querying price ratio for working date {self._working_date.isoformat()}")
         return f"https://www.twse.com.tw/exchangeReport/BWIBBU_d?response=json&date={self._working_date.year}{self._working_date.month:02}{self._working_date.day:02}&selectType=ALL&_={cur_timestamp}"
 
     @property
