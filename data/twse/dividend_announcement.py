@@ -115,21 +115,31 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
 
         if self._data is None:
             return None
+        
+
+        def _get_stock_name(data: dict[str, str]):
+            return _parse_str(["公司名稱"], data)
+
+
+        def _get_special_cash_dividend(data: dict[str, str]):
+            if self.year >= 2016:
+                return _parse_nullable_number(["現金股利-特別股配發現金股利(元/股)"], data)
+
         return [
             DividendAnnouncement(
                 stock_id=_parse_str(["公司代號"], data),
-                stock_name=_parse_str(["公司名稱"], data),
+                stock_name=_get_stock_name(data),
                 count_time_str=_parse_count_time(["股利所屬期間", "股利所屬年度"], data),
                 share_holder_list_final_date=_parse_date_to_isoformat(["權利分派基準日"], data),
 
-                cash_from_earning=_parse_nullable_number(["現金股利-盈餘分配之股東現金股利(元/股)"], data),
-                cash_from_accumulation=_parse_nullable_number(["現金股利-法定盈餘公積、資本公積發放之現金(元/股)"], data),
-                cash_for_special=_parse_nullable_number(["現金股利-特別股配發現金股利(元/股)"], data),
+                cash_from_earning=_parse_nullable_number(["現金股利-盈餘分配之股東現金股利(元/股)", "現金股利-股東配發內容-盈餘分配之股東現金股利(元/股)"], data),
+                cash_from_accumulation=_parse_nullable_number(["現金股利-法定盈餘公積、資本公積發放之現金(元/股)", "現金股利-股東配發內容-法定盈餘公積、資本公積發放之現金(元/股)"], data),
+                cash_for_special=_get_special_cash_dividend(data),
                 cash_date=_parse_nullable_date_to_isoformat(["現金股利-除息交易日"], data),
                 cash_distribute_date=_parse_nullable_date_to_isoformat(["現金股利-現金股利發放日"], data),
 
-                share_from_earning=_parse_nullable_number(["股票股利-盈餘轉增資配股(元/股)"], data),
-                share_from_accumulation=_parse_nullable_number(["股票股利-資本公積轉增資配股(元/股)"], data),
+                share_from_earning=_parse_nullable_number(["股票股利-盈餘轉增資配股(元/股)", "股票股利-股東配發內容-盈餘轉增資配股(元/股)"], data),
+                share_from_accumulation=_parse_nullable_number(["股票股利-資本公積轉增資配股(元/股)", "股票股利-股東配發內容-法定盈餘公積、資本公積轉增資配股(元/股)"], data),
                 share_date=_parse_nullable_date_to_isoformat(["股票股利-除權交易日"], data),
 
                 capital_increase=_parse_nullable_number(["現金增資總股數(股)"], data),
@@ -140,6 +150,7 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
                 par_value=_parse_par(["普通股每股面額"], data),
             )._asdict()
             for data in self._data
+            if self.year >= 2016 or "特別股" not in _get_stock_name(data)
         ]
 
 
