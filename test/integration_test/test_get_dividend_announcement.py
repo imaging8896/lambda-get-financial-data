@@ -24,7 +24,7 @@ from data.constant import StockType
         'capital_increase_rate': None, 
         'capital_increase_price': None, 
         'announcement_date': '2025-05-09', 
-        'par_value': '10'
+        'par_value': '新台幣10.0000元'
     }]),
     ("2025", "3", StockType.OTC, "20", "3526", [{
         'stock_id': '3526', 
@@ -43,7 +43,7 @@ from data.constant import StockType
         'capital_increase_rate': None, 
         'capital_increase_price': None, 
         'announcement_date': '2025-03-24', 
-        'par_value': '10'
+        'par_value': '新台幣10.0000元'
     }]),
     ("2025", "8", StockType.ROTC, "20", "4117", [{
         'stock_id': '4117', 
@@ -62,7 +62,7 @@ from data.constant import StockType
         'capital_increase_rate': "14.79670073", 
         'capital_increase_price': "12", 
         'announcement_date': '2025-08-25', 
-        'par_value': '10'
+        'par_value': '新台幣10.0000元'
     }]),
     ("2025", None, StockType.ROTC, "20", "6987", [{
         'stock_id': '6987', 
