@@ -101,7 +101,7 @@ from data.constant import StockType
             'capital_increase_rate': None, 
             'capital_increase_price': None, 
             'announcement_date': '2024-03-01', 
-            'par_value': "10"
+            'par_value': "新台幣10.0000元"
         },
         {
             'stock_id': '2330', 
@@ -120,7 +120,7 @@ from data.constant import StockType
             'capital_increase_rate': None, 
             'capital_increase_price': None, 
             'announcement_date': '2024-05-28', 
-            'par_value': "10"
+            'par_value': "新台幣10.0000元"
         },
         {
             'stock_id': '2330', 
@@ -139,7 +139,7 @@ from data.constant import StockType
             'capital_increase_rate': None, 
             'capital_increase_price': None, 
             'announcement_date': '2024-08-28', 
-            'par_value': "10"
+            'par_value': "新台幣10.0000元"
         },
         {
             'stock_id': '2330', 
@@ -158,7 +158,7 @@ from data.constant import StockType
             'capital_increase_rate': None, 
             'capital_increase_price': None, 
             'announcement_date': '2024-11-27', 
-            'par_value': "10"
+            'par_value': "新台幣10.0000元"
         },
     ]),
     ("2025", "7", StockType.PUBLIC, "20", "2002A", [{
@@ -178,7 +178,7 @@ from data.constant import StockType
         'capital_increase_rate': None, 
         'capital_increase_price': None, 
         'announcement_date': '2025-07-03', 
-        'par_value': "10"
+        'par_value': "新台幣10.0000元"
     }]),
     ("2025", None, StockType.ROTC, "20", "2245", [
         {
@@ -198,7 +198,7 @@ from data.constant import StockType
             'capital_increase_rate': None, 
             'capital_increase_price': None, 
             'announcement_date': '2025-05-20', 
-            'par_value': "10"
+            'par_value': "新台幣10.0000元"
         },
         {
             'stock_id': '2245', 
@@ -217,7 +217,7 @@ from data.constant import StockType
             'capital_increase_rate': None, 
             'capital_increase_price': None, 
             'announcement_date': '2025-09-30', 
-            'par_value': "5"
+            'par_value': "新台幣5.0000元"
         },
     ]),
     ("2025", None, StockType.ROTC, "20", "2644", [{
@@ -237,7 +237,7 @@ from data.constant import StockType
         'capital_increase_rate': None, 
         'capital_increase_price': None, 
         'announcement_date': '2025-08-13', 
-        'par_value': "10"
+        'par_value': "新台幣10.0000元"
     }]),
 ])
 def test_get_dividend_announcement(year, month, stock_type, timeout, test_stock_id, expect_results):
