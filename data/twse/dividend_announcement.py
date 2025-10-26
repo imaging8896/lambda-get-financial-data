@@ -98,13 +98,7 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
             value = _parse_str(expected_keys, row)
             if value == "無面額":
                 return
-
-            if m := re.match(r"^新台幣(\d+\.\d*)元$", value):
-                value = _strip_number(m.group(1))
-                if value:
-                    return value
-                raise WrongDataFormat(f"Unable to parse par value(not a number) from {value=} of row {row}")
-            raise WrongDataFormat(f"Unable to parse par value from {value=} of row {row}")
+            return value
 
         def _parse_count_time(expected_keys: list[str], row: dict[str, str]):
             value = _parse_str(expected_keys, row)
