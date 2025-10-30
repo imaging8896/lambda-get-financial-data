@@ -26,7 +26,7 @@ def get(data_type: str, mobile: bool = True, desktop: bool = True, **kw):
         "etf_slice": etf_slice.MoneydjETFSliceParser,
         "tw_2y_index": tw_2y_index.MoneydjTWIndex2YPriceParser,
         "etf_dividend": etf_dividend.PocketETFDividendParser,
-        "dividend_announcement": dividend_announcement.TwseDividendAnnouncementParser,
+        "dividend_announcement_sorted_by_announcement_time": dividend_announcement.TwseDividendAnnouncementParser,
         "dividend": dividend.TwseDividendHTMLParser,
         "price_ratio": price_ratio.parser,
         "revenue": revenue.TwseRevenueParser,
