@@ -241,7 +241,7 @@ from data.constant import StockType
     }]),
 ])
 def test_get_dividend_announcement(year, month, stock_type, timeout, test_stock_id, expect_results):
-    result = get("dividend_announcement", year=year, month=month, stock_type=stock_type.value, timeout=timeout)
+    result = get("dividend_announcement_sorted_by_announcement_time", year=year, month=month, stock_type=stock_type.value, timeout=timeout)
 
     results = [x for x in result if x["stock_id"] == test_stock_id]
     assert results, f"Cannot find dividend announcement for stock_id={test_stock_id}"
@@ -253,7 +253,7 @@ def test_get_dividend_announcement(year, month, stock_type, timeout, test_stock_
 def test_get_latest_dividend_announcement(stock_type):
     now = datetime.now()
 
-    results = get("dividend_announcement", year=str(now.year), stock_type=stock_type.value, timeout=str(20))
+    results = get("dividend_announcement_sorted_by_announcement_time", year=str(now.year), stock_type=stock_type.value, timeout=str(20))
     assert isinstance(results, list)
     for result in results:
         assert isinstance(result, dict)
@@ -265,4 +265,4 @@ def test_get_latest_dividend_announcement(stock_type):
 def test_get_no_dividend_announcement(stock_type):
     next_month = datetime.now() + timedelta(days=60)
 
-    assert get("dividend_announcement", year=str(next_month.year), month=str(next_month.month), stock_type=stock_type.value, timeout=str(20)) is None
+    assert get("dividend_announcement_sorted_by_announcement_time", year=str(next_month.year), month=str(next_month.month), stock_type=stock_type.value, timeout=str(20)) is None

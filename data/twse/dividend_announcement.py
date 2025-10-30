@@ -119,7 +119,7 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
             if self.year >= 2016:
                 return _parse_nullable_number(["現金股利-特別股配發現金股利(元/股)"], data)
 
-        return [
+        results = sorted([
             DividendAnnouncement(
                 stock_id=_parse_str(["公司代號"], data),
                 stock_name=_get_stock_name(data),
@@ -141,11 +141,17 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
                 capital_increase_price=_parse_nullable_number(["現金增資認購價(元/股)"], data),
 
                 announcement_date=_parse_date_to_isoformat(["公告日期"], data),
+                announcement_time=data["公告時間"],
                 par_value=_parse_par(["普通股每股面額"], data),
             )._asdict()
             for data in self._data
             if self.year >= 2016 or "特別股" not in _get_stock_name(data)
-        ]
+        ], key=lambda x: (x["stock_id"], x["announcement_date"], x["announcement_time"]))
+        
+        for result in results:
+            result.pop("announcement_time")
+
+        return results
 
 
 DividendAnnouncement = namedtuple("DividendAnnouncement", [
@@ -169,6 +175,7 @@ DividendAnnouncement = namedtuple("DividendAnnouncement", [
         "capital_increase_price",
 
         "announcement_date",
+        "announcement_time",
         "par_value",
     ]
 )
