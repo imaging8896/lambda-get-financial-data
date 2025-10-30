@@ -70,18 +70,26 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
             if "." in value:
                 value = value.rstrip("0")
             return value.rstrip(".")
-
-        def _parse_str(expected_keys: list[str], row: dict[str, str]):
+        
+        def _parse_nullable_str(expected_keys: list[str], row: dict[str, str]) -> str | None:
             for key in expected_keys:
                 if key in row:
-                    return row[key].strip()
-            raise WrongDataFormat(f"Missing {expected_keys=} in row {row}")
+                    data = row[key].strip()
+                    if data.lower() in {"", "n/a", "--", "-"}:
+                        return
+                    return data
+
+        def _parse_str(expected_keys: list[str], row: dict[str, str]) -> str:
+            if value := _parse_nullable_str(expected_keys, row):
+                return value
+            raise WrongDataFormat(f"Missing string value for {expected_keys=} in row {row}")
         
 
         def _parse_nullable_number(expected_keys: list[str], row: dict[str, str]):
-            value = _strip_number(_parse_str(expected_keys, row))
-            if value:
-                return value
+            if raw_value := _parse_nullable_str(expected_keys, row):
+                value = _strip_number(raw_value)
+                if value:
+                    return value
 
         def _parse_date_to_isoformat(expected_keys: list[str], row: dict[str, str]):
             value = _parse_str(expected_keys, row)
@@ -89,8 +97,7 @@ class TwseDividendAnnouncementParser(TwseCsvFileParser):
 
 
         def _parse_nullable_date_to_isoformat(expected_keys: list[str], row: dict[str, str]):
-            value = _parse_str(expected_keys, row)
-            if value:
+            if value := _parse_nullable_str(expected_keys, row):
                 return datetime.strptime(value, "%Y/%m/%d").date().isoformat()
 
 
