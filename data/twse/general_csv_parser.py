@@ -2,7 +2,6 @@ import csv
 import logging
 import re
 
-from datetime import datetime
 from io import StringIO
 
 from ..parser import DataParser
@@ -30,7 +29,7 @@ class TwseCsvFileParser(DataParser):
         else:
             raise WrongDataFormat(f"Unable to find prefix of csv file name from {self.request_url}")
 
-        self.file_name_pattern = rf"({csv_file_prefix}_{datetime.now().strftime('%Y%m%d')}_\d+\.csv)"
+        self.file_name_pattern = rf"({csv_file_prefix}_\d+_\d+\.csv)"
         self.timeout = timeout
 
         self._data = None
